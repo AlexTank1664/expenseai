@@ -1,6 +1,6 @@
 import SwiftUI
 import CoreData
-
+//  NSLocalizedString(   , comment: "")
 struct ManageCurrenciesView: View {
     @Environment(\.managedObjectContext) private var viewContext
 
@@ -11,7 +11,7 @@ struct ManageCurrenciesView: View {
 
     var body: some View {
         Form {
-            Section(header: Text("Выберите валюты для использования")) {
+            Section(header: Text( NSLocalizedString( "Select currencies to use"  , comment: ""))) {
                 ForEach(allCurrencies, id: \.self) { currency in
                     Toggle(isOn: Binding(
                         get: { currency.is_active },
@@ -30,7 +30,7 @@ struct ManageCurrenciesView: View {
                 }
             }
         }
-        .navigationTitle("Рабочие валюты")
+        .navigationTitle( NSLocalizedString(  "Working currencies"  , comment: ""))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif

@@ -5,7 +5,7 @@ fileprivate enum GroupDetailTab: String, CaseIterable {
     case expenses = "Затраты"
     case balances = "Балансы"
 }
-
+//  NSLocalizedString(   , comment: "")
 struct GroupExpensesView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @ObservedObject var group: Group
@@ -28,7 +28,7 @@ struct GroupExpensesView: View {
     
     var body: some View {
         VStack {
-            Picker("View", selection: $selectedTab) {
+            Picker(NSLocalizedString(  "View" , comment: ""), selection: $selectedTab) {
                 ForEach(GroupDetailTab.allCases, id: \.self) { tab in
                     Text(tab.rawValue).tag(tab)
                 }
@@ -43,7 +43,7 @@ struct GroupExpensesView: View {
                 BalancesView(group: group)
             }
         }
-        .navigationTitle(group.name ?? "Группа")
+        .navigationTitle(group.name ?? NSLocalizedString( "Группа"  , comment: ""))
         .modifier(GroupExpensesModals(
             group: group,
             showingAddExpense: $showingAddExpense,
@@ -56,9 +56,9 @@ struct GroupExpensesView: View {
     
     private var expensesList: some View {
         List {
-            Section(header: Text("Затраты")) {
+            Section(header: Text(NSLocalizedString( "Expenses"  , comment: ""))) {
                 if expenses.isEmpty {
-                    Text("Затрат пока нет")
+                    Text(NSLocalizedString(  "No expenses yet" , comment: ""))
                         .foregroundColor(.gray)
                 } else {
                     ForEach(expenses) { expense in
@@ -80,7 +80,7 @@ struct GroupExpensesView: View {
     private func expenseRow(for expense: Expense) -> some View {
         NavigationLink(destination: ExpenseDetailView(expense: expense)) {
             HStack {
-                Text(expense.desc ?? "No description")
+                Text(expense.desc ?? NSLocalizedString( "No description"  , comment: ""))
                 Spacer()
                 Text(formatAmount(expense.amount, currency: expense.currency))
             }
@@ -90,9 +90,9 @@ struct GroupExpensesView: View {
     @ViewBuilder
     private func settlementRow(for expense: Expense) -> some View {
         HStack(spacing: 4) {
-            Text(expense.paidBy?.name ?? "Кто-то")
+            Text(expense.paidBy?.name ?? NSLocalizedString( "Who" , comment: ""))
             Image(systemName: "arrow.right")
-            Text(expense.sharesArray.first?.participant?.name ?? "кому-то")
+            Text(expense.sharesArray.first?.participant?.name ?? NSLocalizedString(  "to whom" , comment: ""))
             Spacer()
             Text(formatAmount(expense.amount, currency: expense.currency))
         }
@@ -152,11 +152,11 @@ fileprivate struct GroupExpensesModals: ViewModifier {
             .sheet(isPresented: $showingAddExpense) { ExpenseEditView(group: group) }
             .sheet(isPresented: $showingEditGroup) { GroupEditView(group: group) }
             .sheet(isPresented: $showingSettleUp) { SettleUpView(group: group, payer: nil, payee: nil, amount: 0, currency: group.defaultCurrency) }
-            .alert("Удалить возврат?", isPresented: .constant(settlementToDelete != nil), presenting: settlementToDelete) { expense in
-                Button("Удалить", role: .destructive) {
+            .alert(NSLocalizedString(  "Delete refund?" , comment: ""), isPresented: .constant(settlementToDelete != nil), presenting: settlementToDelete) { expense in
+                Button(NSLocalizedString( "Delete"  , comment: ""), role: .destructive) {
                     deleteAction(expense)
                 }
-                Button("Отмена", role: .cancel) {
+                Button(NSLocalizedString( "Cancel"  , comment: ""), role: .cancel) {
                     settlementToDelete = nil
                 }
             } message: { expense in

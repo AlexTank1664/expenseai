@@ -4,16 +4,16 @@ import CoreData
 struct ExpenseDetailView: View {
     @ObservedObject var expense: Expense
     @State private var showingEditExpense = false
-
+    //  NSLocalizedString(   , comment: "")
     var body: some View {
         List {
             detailsSection
             sharesSection
         }
-        .navigationTitle("Детали затрат")
+        .navigationTitle(NSLocalizedString(  "Expense details" , comment: ""))
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button("Редактировать") {
+                Button(NSLocalizedString(  "Edit" , comment: "")) {
                     showingEditExpense = true
                 }
             }
@@ -28,7 +28,7 @@ struct ExpenseDetailView: View {
         Section {
             if let desc = expense.desc, !desc.isEmpty {
                 VStack(alignment: .leading) {
-                    Text("Описание:")
+                    Text(NSLocalizedString(  "Description:" , comment: ""))
                         .font(.caption)
                         .foregroundColor(.gray)
                     Text(desc)
@@ -36,25 +36,26 @@ struct ExpenseDetailView: View {
             }
             
             HStack {
-                Text("Сумма:")
+                Text(NSLocalizedString( "Amount:"  , comment: ""))
+                
                 Spacer()
                 Text(formatAmount(expense.amount, currency: expense.currency))
             }
 
             HStack {
-                Text("Оплатил:")
+                Text(NSLocalizedString(  "Paid by:" , comment: ""))
                 Spacer()
                 Text(expense.paidBy?.name ?? "Unknown")
             }
 
             HStack {
-                Text("Группа:")
+                Text(NSLocalizedString( "Group:"  , comment: ""))
                 Spacer()
                 Text(expense.group?.name ?? "Unknown")
             }
 
             HStack {
-                Text("Дата:")
+                Text(NSLocalizedString(  "Date:" , comment: ""))
                 Spacer()
                 Text(expense.date?.formatted() ?? "Unknown")
             }
@@ -63,7 +64,7 @@ struct ExpenseDetailView: View {
     
     @ViewBuilder
     private var sharesSection: some View {
-        Section(header: Text("Распределение")) {
+        Section(header: Text(NSLocalizedString( "Distribution"  , comment: ""))) {
             ForEach(expense.sharesArray, id: \.id) { share in
                 HStack {
                     Text(share.participant?.name ?? "Unknown")

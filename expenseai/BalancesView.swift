@@ -50,9 +50,10 @@ struct BalancesView: View {
 
     @ViewBuilder
     private func balancesSection(with participantBalances: [ParticipantBalance]) -> some View {
-        Section(header: Text("Общий баланс")) {
+       
+        Section(header: Text(NSLocalizedString("Total balance", comment: ""))) {
             if participantBalances.isEmpty {
-                Text("Нет данных для расчета.").foregroundColor(.gray)
+                Text(NSLocalizedString("No data for calculation.", comment: "")).foregroundColor(.gray)
             } else {
                 ForEach(participantBalances) { balance in
                     VStack(alignment: .leading) {
@@ -85,11 +86,11 @@ struct BalancesView: View {
     private func settlementsSection(with debtTransactionsByCurrency: [Currency: [DebtTransaction]]) -> some View {
         if debtTransactionsByCurrency.isEmpty {
             Section {
-                Text("Нет необходимости в транзакциях.").foregroundColor(.gray)
+                Text(NSLocalizedString("There is no need for calculations.", comment: "")).foregroundColor(.gray)
             }
         } else {
             ForEach(debtTransactionsByCurrency.keys.sorted { $0.c_code ?? "" < $1.c_code ?? "" }, id: \.self) { currency in
-                Section(header: Text("Как рассчитаться (\(currency.symbol_native ?? ""))")) {
+                Section(header: Text(NSLocalizedString("How to settle (\(currency.symbol_native ?? ""))", comment: ""))) {
                     if let transactions = debtTransactionsByCurrency[currency], !transactions.isEmpty {
                         ForEach(transactions) { transaction in
                             Button(action: {
@@ -106,7 +107,7 @@ struct BalancesView: View {
                             }
                         }
                     } else {
-                        Text("Все в расчете.").foregroundColor(.gray)
+                        Text(NSLocalizedString("All settled.", comment: "")).foregroundColor(.gray)
                     }
                 }
             }
@@ -123,17 +124,17 @@ struct BalancesView: View {
             let participantShares = group.expensesArray.flatMap { $0.sharesArray }.filter { !$0.expense!.is_settlement && $0.participant?.id == balance.id }
             
             if !paidExpenses.isEmpty || !participantShares.isEmpty {
-                Text("Затраты")
+                Text(NSLocalizedString("Expenses", comment: ""))
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .padding(.bottom, -4)
                 
                 ForEach(paidExpenses) { expense in
-                    detailRow(description: expense.desc ?? "Без описания", amount: expense.amount, currency: expense.currency, isCredit: true)
+                    detailRow(description: expense.desc ?? "No description", amount: expense.amount, currency: expense.currency, isCredit: true)
                 }
                 
                 ForEach(participantShares, id: \.id) { share in
-                    detailRow(description: share.expense?.desc ?? "Без описания", amount: share.amount, currency: share.expense?.currency, isCredit: false)
+                    detailRow(description: share.expense?.desc ?? "No description", amount: share.amount, currency: share.expense?.currency, isCredit: false)
                 }
             }
 
@@ -145,17 +146,17 @@ struct BalancesView: View {
                 if !paidExpenses.isEmpty || !participantShares.isEmpty {
                     Divider().padding(.vertical, 4)
                 }
-                Text("Погашение долгов")
+                Text(NSLocalizedString("Debt repayment", comment: ""))
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .padding(.bottom, -4)
                 
                 ForEach(settlementsReceived) { expense in
-                    detailRow(description: expense.desc ?? "Погашение", amount: expense.amount, currency: expense.currency, isCredit: true)
+                    detailRow(description: expense.desc ?? "Settlement", amount: expense.amount, currency: expense.currency, isCredit: true)
                 }
                 
                 ForEach(settlementsPaid) { expense in
-                    detailRow(description: expense.desc ?? "Погашение", amount: expense.amount, currency: expense.currency, isCredit: false)
+                    detailRow(description: expense.desc ?? "Settlement", amount: expense.amount, currency: expense.currency, isCredit: false)
                 }
             }
         }
@@ -179,7 +180,7 @@ struct BalancesView: View {
     @ViewBuilder
     private func balanceView(for balance: ParticipantBalance) -> some View {
         if balance.balances.count > 1 {
-            Text("Несколько валют")
+            Text(NSLocalizedString("Multiple currencies", comment: ""))
                 .font(.footnote)
                 .foregroundColor(.orange)
         } else if let (currency, amount) = balance.balances.first {

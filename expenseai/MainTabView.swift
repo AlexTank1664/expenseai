@@ -2,7 +2,8 @@ import SwiftUI
 
 struct MainTabView: View {
     @State private var showingParticipantsList = false
-
+  //  NSLocalizedString(   , comment: "")
+   
     var body: some View {
         ZStack(alignment: .bottom) {
             TabView {
@@ -11,7 +12,7 @@ struct MainTabView: View {
                     GroupsListView()
                 }
                 .tabItem {
-                    Label("Группы", systemImage: "person.3.fill")
+                    Label(NSLocalizedString(  "Groups" , comment: ""), systemImage: "person.3.fill")
                 }
                 .tag(0)
 
@@ -23,7 +24,7 @@ struct MainTabView: View {
                     SettingsView()
                 }
                 .tabItem {
-                    Label("Настройки", systemImage: "gear")
+                    Label(NSLocalizedString(  "Settings" , comment: ""), systemImage: "gear")
                 }
                 .tag(2)
             }

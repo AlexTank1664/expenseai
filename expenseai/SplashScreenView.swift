@@ -1,11 +1,21 @@
 import SwiftUI
 
 struct SplashScreenView: View {
+    @State private var blurRadius: CGFloat = 50
+    
     var body: some View {
         ZStack {
-            // A dark background often looks good for splash screens
-            Color(white: 0.1).edgesIgnoringSafeArea(.all)
-
+            Image("oboi1")
+                .resizable()
+                .scaledToFill()
+                .edgesIgnoringSafeArea(.all)
+                .blur(radius: blurRadius)
+                .onAppear {
+                    withAnimation(.easeInOut(duration: 3)) {
+                        blurRadius = 3
+                    }
+                }
+            
             VStack(spacing: 20) {
                 Spacer()
                 
@@ -17,10 +27,14 @@ struct SplashScreenView: View {
                     .shadow(color: .black.opacity(0.4), radius: 15, x: 0, y: 10)
                     .padding(.bottom, 30)
                 
-                Text("ExpenseAI")
+                Text(NSLocalizedString("Pay Up, Pal", comment: ""))
                     .font(.system(size: 40, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
-
+                
+                Text(NSLocalizedString("group finance program", comment: ""))
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+                
                 ProgressView()
                     .progressViewStyle(CircularProgressViewStyle(tint: .white))
                     .scaleEffect(1.5)

@@ -1,6 +1,6 @@
 import SwiftUI
 import CoreData
-
+//  NSLocalizedString(   , comment: "")
 enum DistributionType: String, CaseIterable, Identifiable {
     case equally = "Поровну"
     case parts = "По частям"
@@ -39,7 +39,7 @@ struct ExpenseEditView: View {
         predicate: NSPredicate(format: "is_active == YES")
     ) var currencies: FetchedResults<Currency>
     
-    var navigationTitle: String { expenseToEdit == nil ? "Новые затраты" : "Редактировать затраты" }
+    var navigationTitle: String { expenseToEdit == nil ? NSLocalizedString(  "New expense" , comment: "") : NSLocalizedString( "Edit expense"  , comment: "") }
     var sortedParticipants: [Participant] { participants.sorted { $0.name ?? "" < $1.name ?? "" } }
     
     // Validation
@@ -63,7 +63,7 @@ struct ExpenseEditView: View {
                 
                 if expenseToEdit != nil {
                     Section {
-                        Button("Удалить затрату", role: .destructive) {
+                        Button(NSLocalizedString( "Delete expense"  , comment: ""), role: .destructive) {
                             showingDeleteAlert = true
                         }
                     }
@@ -71,9 +71,9 @@ struct ExpenseEditView: View {
             }
             .navigationTitle(navigationTitle)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Отмена") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button(NSLocalizedString( "Cancel" , comment: "")) { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Сохранить") { save(); dismiss() }
+                    Button(NSLocalizedString(  "Save" , comment: "")) { save(); dismiss() }
                         .disabled(isSaveDisabled)
                 }
             }
@@ -82,14 +82,14 @@ struct ExpenseEditView: View {
                     MultiSelectParticipantView(allParticipants: selectedGroup?.membersArray ?? [], selectedParticipants: $participants)
                 }
             }
-            .alert("Удалить затрату?", isPresented: $showingDeleteAlert) {
-                Button("Удалить", role: .destructive) {
+            .alert(NSLocalizedString(  "Delete expense?" , comment: ""), isPresented: $showingDeleteAlert) {
+                Button(NSLocalizedString( "Delete", comment: ""), role: .destructive) {
                     deleteExpense()
                     dismiss()
                 }
-                Button("Отмена", role: .cancel) { }
+                Button(NSLocalizedString( "Cancel"  , comment: ""), role: .cancel) { }
             } message: {
-                Text("Вы уверены, что хотите удалить эту затрату? Это действие нельзя отменить.")
+                Text(NSLocalizedString( "Are you sure you want to delete this expense? This action cannot be undone." , comment: ""))
             }
             .onAppear(perform: setupInitialState)
             .onChange(of: amount) { recalculateShares() }
@@ -110,14 +110,14 @@ struct ExpenseEditView: View {
     private var basicInfoSection: some View {
         Section {
             HStack {
-                TextField("Сумма", value: $amount, format: .number.precision(.fractionLength(Int(selectedCurrency?.decimal_digits ?? 2))))
+                TextField(NSLocalizedString( "Total"  , comment: ""), value: $amount, format: .number.precision(.fractionLength(Int(selectedCurrency?.decimal_digits ?? 2))))
                     #if os(iOS)
                     .keyboardType(.decimalPad)
                     #endif
                 Text(selectedCurrency?.symbol_native ?? "")
                     .foregroundColor(.gray)
             }
-            TextField("Описание", text: $descriptionText)
+            TextField(NSLocalizedString(  "Description" , comment: ""), text: $descriptionText)
         }
     }
     
@@ -125,20 +125,20 @@ struct ExpenseEditView: View {
     private var groupAndPayerSection: some View {
         Section {
             HStack {
-                Text("Группа")
+                Text(NSLocalizedString( "Group"  , comment: ""))
                 Spacer()
-                Text(selectedGroup?.name ?? "Не выбрана").foregroundColor(.gray)
+                Text(selectedGroup?.name ?? NSLocalizedString( "Not selected" , comment: "")).foregroundColor(.gray)
             }
-            Picker("Валюта", selection: $selectedCurrency) {
-                Text("Не выбрана").tag(nil as Currency?)
+            Picker(NSLocalizedString( "Currency"  , comment: ""), selection: $selectedCurrency) {
+                Text(NSLocalizedString(  "not selected" , comment: "")).tag(nil as Currency?)
                 ForEach(currencies, id: \.self) { currency in
                     Text("\(currency.currency_name ?? "") (\(currency.symbol_native ?? ""))").tag(currency as Currency?)
                 }
             }
             .disabled(selectedGroup == nil)
             
-            Picker("Оплатил", selection: $selectedPayer) {
-                Text("Не выбран").tag(nil as Participant?)
+            Picker(NSLocalizedString( "Paid by"  , comment: ""), selection: $selectedPayer) {
+                Text(NSLocalizedString(  "Not selected" , comment: "")).tag(nil as Participant?)
                 ForEach(selectedGroup?.membersArray ?? [], id: \.self) { participant in
                     Text(participant.name ?? "Unknown").tag(participant as Participant?)
                 }
@@ -153,7 +153,7 @@ struct ExpenseEditView: View {
             Section {
                 Button(action: { showingParticipantSelector = true }) {
                     HStack {
-                        Text("Участники")
+                        Text(NSLocalizedString( "Participants"  , comment: ""))
                         Spacer()
                         Text("\(participants.count) выбрано").foregroundColor(.gray)
                     }
@@ -165,8 +165,8 @@ struct ExpenseEditView: View {
     
     @ViewBuilder
     private var distributionMethodSection: some View {
-        Section(header: Text("Метод распределения")) {
-            Picker("Метод", selection: $distributionType) {
+        Section(header: Text(NSLocalizedString( "Distribution method"  , comment: ""))) {
+            Picker(NSLocalizedString(  "Method" , comment: ""), selection: $distributionType) {
                 ForEach(DistributionType.allCases) { type in
                     Text(type.rawValue).tag(type)
                 }
@@ -178,7 +178,7 @@ struct ExpenseEditView: View {
     @ViewBuilder
     private var distributionDetailsSection: some View {
         if !participants.isEmpty {
-            Section(header: Text("Распределение затрат"), footer: distributionFooter) {
+            Section(header: Text(NSLocalizedString( "Expense distribution"  , comment: "")), footer: distributionFooter) {
                 ForEach(sortedParticipants, id: \.id) { participant in
                     distributionRow(for: participant)
                 }
@@ -202,7 +202,7 @@ struct ExpenseEditView: View {
                     .foregroundColor(.gray)
                     .frame(minWidth: 60, alignment: .trailing)
 
-                TextField("Части", value: Binding(get: { shareParts[participant] ?? 1.0 }, set: { shareParts[participant] = $0 }), format: .number)
+                TextField(NSLocalizedString(  "Parts" , comment: ""), value: Binding(get: { shareParts[participant] ?? 1.0 }, set: { shareParts[participant] = $0 }), format: .number)
                     .multilineTextAlignment(.trailing)
                     .frame(width: 60)
                     #if os(iOS)
@@ -213,7 +213,7 @@ struct ExpenseEditView: View {
                     .foregroundColor(.gray)
                     .frame(minWidth: 60, alignment: .trailing)
                 
-                TextField("Процент", value: Binding(get: { sharePercentages[participant] ?? 0.0 }, set: { sharePercentages[participant] = $0 }), format: .number)
+                TextField(NSLocalizedString(  "Percentage" , comment: ""), value: Binding(get: { sharePercentages[participant] ?? 0.0 }, set: { sharePercentages[participant] = $0 }), format: .number)
                     .multilineTextAlignment(.trailing)
                     .frame(width: 80)
                     .overlay(Text("%").foregroundColor(.gray).padding(.leading), alignment: .trailing)
@@ -221,7 +221,7 @@ struct ExpenseEditView: View {
                     .keyboardType(.decimalPad)
                     #endif
             case .manually:
-                TextField("Сумма", value: Binding(get: { shares[participant] ?? 0.0 }, set: { shares[participant] = $0 }), format: .number.precision(.fractionLength(2)))
+                TextField(NSLocalizedString( "Amount"  , comment: ""), value: Binding(get: { shares[participant] ?? 0.0 }, set: { shares[participant] = $0 }), format: .number.precision(.fractionLength(2)))
                     .multilineTextAlignment(.trailing)
                     #if os(iOS)
                     .keyboardType(.decimalPad)
@@ -399,10 +399,10 @@ struct MultiSelectParticipantView: View {
                 .foregroundColor(.primary)
             }
         }
-        .navigationTitle("Выберите участников")
+        .navigationTitle(NSLocalizedString( "Select participants"  , comment: ""))
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button("Готово") {
+                Button(NSLocalizedString( "Done"  , comment: "")) {
                     dismiss()
                 }
             }

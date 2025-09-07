@@ -1,0 +1,30 @@
+/* 
+  Localizable.strings
+  expenseai
+
+  Created by Mac on 07.09.2025.
+  
+*/
+"Pay Up, Pal" = "Pay Up Pal";
+"group finance program" = "group finance program";
+"NavigationTitle" = "Settings";
+"ThemePickerLabel" = "Theme";
+"SystemOption" = "System";
+"LightOption" = "Light";
+"DarkOption" = "Dark";
+"ManageDataHeader" = "Data Management";
+"CurrenciesButtonText" = "Working Currencies";
+"LogoutButtonText" = "Log Out";
+"UserInfoHeader" = "User Information";
+"IDLabel" = "ID";"FirstNameLabel" = "First Name";
+"LastNameLabel" = "Last Name";
+"EmailLabel" = "Email";
+"LanguageSectionHeader" = "Language";
+"SelectLanguageLabel" = "Select Language";
+"RussianOption" = "Russian";
+"EnglishOption" = "English";
+"Great!" = "Great!";
+"Total balance" = "Total balance";
+"There is no need for calculations" = "There is no need for calculations";
+"All in calculation" = "All in calculation";
+"How To Pay" = "How To Pay";

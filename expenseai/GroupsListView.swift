@@ -20,7 +20,7 @@ struct GroupsListView: View {
             return groups.filter { $0.name?.localizedCaseInsensitiveContains(searchText) ?? false }
         }
     }
-
+  //  NSLocalizedString(   , comment: "")
     var body: some View {
         List {
             ForEach(filteredGroups, id: \.id) { group in
@@ -34,15 +34,15 @@ struct GroupsListView: View {
                 }
                 .swipeActions {
                     Button(action: { self.groupToEdit = group }) {
-                        Label("Edit", systemImage: "pencil")
+                        Label(NSLocalizedString(  "Edit" , comment: ""), systemImage: "pencil")
                     }
                     .tint(.blue)
                 }
             }
             .onDelete(perform: deleteGroups)
         }
-        .navigationTitle("Группы")
-        .searchable(text: $searchText, prompt: "Поиск групп")
+        .navigationTitle(NSLocalizedString(  "Groups" , comment: ""))
+        .searchable(text: $searchText, prompt: NSLocalizedString( "Search for group"  , comment: ""))
         .modifier(GroupsListNavigation(
             showingAddGroup: $showingAddGroup,
             showingAddParticipant: $showingAddParticipant,

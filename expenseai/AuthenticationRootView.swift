@@ -24,7 +24,7 @@ struct AuthenticationRootView: View {
         }
         .alert(isPresented: $showSuccessAlert) {
             Alert(
-                title: Text("Успех!"),
+                title: Text(LocalizationManager.localize(key: "Great!")),
                 message: Text(authService.registrationSuccessMessage ?? ""),
                 dismissButton: .default(Text("OK")) {
                     // Reset the message after the alert is dismissed

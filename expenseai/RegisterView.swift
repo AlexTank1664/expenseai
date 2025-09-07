@@ -13,77 +13,86 @@ struct RegisterView: View {
     var isFormValid: Bool {
         !firstName.isEmpty && !lastName.isEmpty && !email.isEmpty && !password.isEmpty && password == password2
     }
-
+    
     var body: some View {
-        VStack(spacing: 20) {
-            Spacer()
+        // не забудь - тексты -  NSLocalizedString(   , comment: "")
+        ZStack {
+            Image("oboi1")
+                .resizable()
+                .scaledToFill()
+                .edgesIgnoringSafeArea(.all)
+                .blur(radius: 3)
             
-            Text("Регистрация")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-            
-            VStack(spacing: 15) {
-                TextField("Имя", text: $firstName)
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
+            VStack(spacing: 20) {
+                Spacer()
                 
-                TextField("Фамилия", text: $lastName)
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
+                Text(NSLocalizedString( "Registration"  , comment: ""))
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
                 
-                TextField("Email", text: $email)
-                    .keyboardType(.emailAddress)
-                    .autocapitalization(.none)
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
-                
-                SecureField("Пароль", text: $password)
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
-                
-                SecureField("Повторите пароль", text: $password2)
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
-            }
-            
-            if authService.isLoading {
-                ProgressView()
-                    .padding()
-            } else {
-                Button(action: {
-                    authService.register(
-                        firstName: firstName,
-                        lastName: lastName,
-                        email: email,
-                        password: password,
-                        password2: password2
-                    )
-                }) {
-                    Text("Зарегистрироваться")
-                        .font(.headline)
-                        .foregroundColor(.white)
+                VStack(spacing: 15) {
+                    TextField(NSLocalizedString(  "Name" , comment: ""), text: $firstName)
                         .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(isFormValid ? Color.blue : Color.gray)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(10)
+                    
+                    TextField(NSLocalizedString(  "Surname" , comment: ""), text: $lastName)
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(10)
+                    
+                    TextField(NSLocalizedString(  "Email" , comment: ""), text: $email)
+                        .keyboardType(.emailAddress)
+                        .autocapitalization(.none)
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(10)
+                    
+                    SecureField(NSLocalizedString(  "Password" , comment: ""), text: $password)
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(10)
+                    
+                    SecureField(NSLocalizedString(  "Repeat password" , comment: ""), text: $password2)
+                        .padding()
+                        .background(Color(.systemGray6))
                         .cornerRadius(10)
                 }
-                .disabled(!isFormValid)
+                
+                if authService.isLoading {
+                    ProgressView()
+                        .padding()
+                } else {
+                    Button(action: {
+                        authService.register(
+                            firstName: firstName,
+                            lastName: lastName,
+                            email: email,
+                            password: password,
+                            password2: password2
+                        )
+                    }) {
+                        Text(NSLocalizedString(  "Register" , comment: ""))
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(isFormValid ? Color.blue : Color.gray)
+                            .cornerRadius(10)
+                    }
+                    .disabled(!isFormValid)
+                }
+                
+                Button(action: {
+                    showLogin = true
+                }) {
+                    Text(NSLocalizedString( "Already have an account? Login"  , comment: ""))
+                }
+                .padding(.top)
+                
+                Spacer()
             }
-            
-            Button(action: {
-                showLogin = true
-            }) {
-                Text("Уже есть аккаунт? **Войти**")
-            }
-            .padding(.top)
-            
-            Spacer()
+            .padding()
         }
-        .padding()
     }
 }

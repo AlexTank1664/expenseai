@@ -12,14 +12,14 @@ struct GroupEditView: View {
     @State private var name: String = ""
     @State private var selectedCurrency: Currency?
     @State private var selectedParticipants: Set<Participant> = []
-    
+  //  NSLocalizedString(   , comment: "")
     // Computed properties
     private var isNew: Bool {
         group == nil
     }
     
     var navigationTitle: String {
-        isNew ? "Новая группа" : "Редактировать группу"
+        isNew ? NSLocalizedString(  "New group" , comment: "") : NSLocalizedString( "Edit group"  , comment: "")
     }
 
     // --- Fetched data for pickers ---
@@ -46,19 +46,19 @@ struct GroupEditView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("Основная информация")) {
-                    TextField("Название группы", text: $name)
-                    Picker("Валюта по умолчанию", selection: $selectedCurrency) {
-                        Text("Не выбрана").tag(nil as Currency?)
+                Section(header: Text(NSLocalizedString( "Basic information"  , comment: ""))) {
+                    TextField(NSLocalizedString( "Group name"  , comment: ""), text: $name)
+                    Picker(NSLocalizedString( "Default currency"  , comment: ""), selection: $selectedCurrency) {
+                        Text(NSLocalizedString(  "Not selected" , comment: "")).tag(nil as Currency?)
                         ForEach(currencies, id: \.self) { currency in
                             Text("\(currency.currency_name ?? "") (\(currency.symbol_native ?? ""))").tag(currency as Currency?)
                         }
                     }
                 }
 
-                Section(header: Text("Участники")) {
+                Section(header: Text(NSLocalizedString(  "Participants" , comment: ""))) {
                     if participants.isEmpty {
-                        Text("Сначала добавьте участников")
+                        Text(NSLocalizedString( "Add participants first"  , comment: ""))
                             .foregroundColor(.gray)
                     } else {
                         ForEach(participants, id: \.id) { participant in
@@ -85,12 +85,13 @@ struct GroupEditView: View {
             .navigationTitle(navigationTitle)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Отмена") {
+                    Button(NSLocalizedString(  "Отмена" , comment: "")) {
+                        
                         dismiss() // Just dismiss, no need to delete anything
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Сохранить") {
+                    Button(NSLocalizedString(  "Сохранить" , comment: "")) {
                         save()
                         dismiss()
                     }
