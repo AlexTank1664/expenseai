@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		FADB5FEB2E63782D00B026A7 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = FADB5FEA2E63782D00B026A7 /* KeychainAccess */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		FA40FEFF2E53A62B008BC98C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FADB5FEB2E63782D00B026A7 /* KeychainAccess in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +83,7 @@
 				FA40FEEF2E53A627008BC98C /* expenseai */,
 				FA40FF012E53A62B008BC98C /* expenseaiTests */,
 				FA40FF0B2E53A62B008BC98C /* expenseaiUITests */,
+				FADB5FE92E63780800B026A7 /* Frameworks */,
 				FA40FEEE2E53A627008BC98C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -90,6 +96,13 @@
 				FA40FF082E53A62B008BC98C /* expenseaiUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		FADB5FE92E63780800B026A7 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -112,6 +125,7 @@
 			);
 			name = expenseai;
 			packageProductDependencies = (
+				FADB5FEA2E63782D00B026A7 /* KeychainAccess */,
 			);
 			productName = expenseai;
 			productReference = FA40FEED2E53A627008BC98C /* expenseai.app */;
@@ -195,6 +209,10 @@
 			);
 			mainGroup = FA40FEE42E53A627008BC98C;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				FA2642002E63738600F286F3 /* XCRemoteSwiftPackageReference "swift-algorithms" */,
+				FA2642012E63762E00F286F3 /* XCRemoteSwiftPackageReference "KeychainAccess" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = FA40FEEE2E53A627008BC98C /* Products */;
 			projectDirPath = "";
@@ -392,6 +410,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"expenseai/Preview Content\"";
+				DEVELOPMENT_TEAM = C98SAK4B84;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -429,6 +448,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"expenseai/Preview Content\"";
+				DEVELOPMENT_TEAM = C98SAK4B84;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -583,6 +603,33 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		FA2642002E63738600F286F3 /* XCRemoteSwiftPackageReference "swift-algorithms" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-algorithms.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.1;
+			};
+		};
+		FA2642012E63762E00F286F3 /* XCRemoteSwiftPackageReference "KeychainAccess" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kishikawakatsumi/KeychainAccess.git";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		FADB5FEA2E63782D00B026A7 /* KeychainAccess */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FA2642012E63762E00F286F3 /* XCRemoteSwiftPackageReference "KeychainAccess" */;
+			productName = KeychainAccess;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = FA40FEE52E53A627008BC98C /* Project object */;
 }

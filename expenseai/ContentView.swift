@@ -1,24 +1,33 @@
-//
-//  ContentView.swift
-//  expenseai
-//
-//  Created by MacbookPro on 18.08.2025.
-//
-
 import SwiftUI
+import CoreData
 
 struct ContentView: View {
-    var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
-    }
-}
+    @EnvironmentObject var authService: AuthService
+    
+    @State private var isMinimumTimeElapsed = false
 
-#Preview {
-    ContentView()
+    var body: some View {
+        // Replace Group with ZStack to allow modifiers
+        ZStack {
+            if authService.isAuthenticated && authService.isUserLoaded && isMinimumTimeElapsed {
+                // State 1: All ready, show main app
+                MainTabView()
+            } else if authService.isAuthenticated {
+                // State 2: Token exists, but we are waiting for user data or the timer. Show splash.
+                SplashScreenView()
+            } else {
+                // State 3: No token, user needs to log in or register.
+                AuthenticationRootView()
+            }
+        }
+        .onAppear(perform: startTimer)
+    }
+    
+    private func startTimer() {
+        guard !isMinimumTimeElapsed else { return }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            self.isMinimumTimeElapsed = true
+        }
+    }
 }

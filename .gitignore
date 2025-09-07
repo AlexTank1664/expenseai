@@ -1,0 +1,45 @@
+# Xcode
+#
+# gitignore contributors: remember to keep this file simple and straightforward
+# See https://github.com/github/gitignore/blob/main/Global/Xcode.gitignore
+
+## User-specific
+*.xcuserdatad/
+*.xcscmblueprint
+*.xcschememanagement.plist
+*.xccheckout
+
+## Build generated
+build/
+DerivedData/
+
+## Various settings
+*.xsettings
+
+## Other
+*.moved-aside
+*.xcuserstate
+*.xcworkspace/contents.xcworkspacedata
+
+# Swift Package Manager
+#
+# Add this line if you want to avoid checking in source code from Swift Package Manager dependencies.
+# *.build/
+# Package.resolved
+# Package.swift
+.build/
+Packages/
+SourcePackages/
+*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+
+# Cocoapods
+#
+# We recommend against adding the Pods directory to your .gitignore. However
+# you should judge for yourself, the pros and cons are mentioned at:
+# https://guides.cocoapods.org/using/using-cocoapods.html#should-i-check-the-pods-directory-into-source-control
+#
+# Pods/
+#
+# Add this line if you want to avoid checking in source code from the Xcode workspace
+# *.xcworkspace
+
