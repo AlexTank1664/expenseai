@@ -17,7 +17,10 @@ struct SettingsView: View {
                     }
                     .pickerStyle(.segmented)
                 }
-                
+               
+                NavigationLink(destination: ManageCurrenciesView()) {
+                    Text(LocalizationManager.localize(key: "Working currencies"))
+                }
                 // Язык
                 Section(header: Text(LocalizationManager.localize(key: "LanguageSectionHeader"))) {
                     Button(action: {

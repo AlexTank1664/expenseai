@@ -31,7 +31,7 @@ struct SplashScreenView: View {
                     .font(.system(size: 40, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
                 
-                Text(NSLocalizedString("group finance program", comment: ""))
+                Text(NSLocalizedString("group finance application", comment: ""))
                     .font(.system(size: 15, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
                 
