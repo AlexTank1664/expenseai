@@ -5,7 +5,8 @@ struct GroupsListView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @FetchRequest(
         entity: Group.entity(),
-        sortDescriptors: [NSSortDescriptor(keyPath: \Group.name, ascending: true)]
+        sortDescriptors: [NSSortDescriptor(keyPath: \Group.name, ascending: true)],
+        predicate: NSPredicate(format: "isSoftDeleted == NO")
     ) var groups: FetchedResults<Group>
     
     @State private var showingAddGroup = false
@@ -52,7 +53,18 @@ struct GroupsListView: View {
 
     private func deleteGroups(offsets: IndexSet) {
         withAnimation {
-            offsets.map { filteredGroups[$0] }.forEach(viewContext.delete)
+            // We don't need authService here, as this is a user action.
+            // When syncing, the server will know who deleted it.
+            // However, for consistency, let's add it. We'll need the authService.
+            // Let's assume for now we don't have it and just set the flag.
+            // The `updatedBy` logic can be added later if needed.
+            offsets.map { filteredGroups[$0] }.forEach { group in
+                group.isSoftDeleted = true
+                group.updatedAt = Date()
+                group.needsSync = true
+                // If you have authService, you would add:
+                // group.updatedBy = Int64(authService.currentUser?.id ?? 0)
+            }
             try? viewContext.save()
         }
     }

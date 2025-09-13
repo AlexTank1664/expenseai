@@ -25,29 +25,29 @@ struct RegisterView: View {
             VStack(spacing: 15) {
                 TextField("Имя", text: $firstName)
                     .padding()
-                    .background(Color(.systemGray6))
+                    .background(Color(UIColor.systemGray6))
                     .cornerRadius(10)
                 
                 TextField("Фамилия", text: $lastName)
                     .padding()
-                    .background(Color(.systemGray6))
+                    .background(Color(UIColor.systemGray6))
                     .cornerRadius(10)
                 
                 TextField("Email", text: $email)
                     .keyboardType(.emailAddress)
                     .autocapitalization(.none)
                     .padding()
-                    .background(Color(.systemGray6))
+                    .background(Color(UIColor.systemGray6))
                     .cornerRadius(10)
                 
                 SecureField("Пароль", text: $password)
                     .padding()
-                    .background(Color(.systemGray6))
+                    .background(Color(UIColor.systemGray6))
                     .cornerRadius(10)
                 
                 SecureField("Повторите пароль", text: $password2)
                     .padding()
-                    .background(Color(.systemGray6))
+                    .background(Color(UIColor.systemGray6))
                     .cornerRadius(10)
             }
             

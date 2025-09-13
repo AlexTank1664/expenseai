@@ -1,8 +1,13 @@
 import Foundation
 
-struct AppError: Identifiable {
+struct AppError: Identifiable, Error {
     let id = UUID()
     let message: String
+    
+    // Conformance to LocalizedError
+    var errorDescription: String? {
+        return message
+    }
 }
 
 struct LoginRequest: Codable {

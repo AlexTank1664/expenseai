@@ -23,10 +23,12 @@ struct ParticipantsListView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @FetchRequest(
         entity: Participant.entity(),
-        sortDescriptors: [NSSortDescriptor(keyPath: \Participant.name, ascending: true)]
+        sortDescriptors: [NSSortDescriptor(keyPath: \Participant.name, ascending: true)],
+        predicate: NSPredicate(format: "isSoftDeleted == NO")
     ) var participants: FetchedResults<Participant>
     
     @State private var activeSheet: ActiveSheet?
+    @EnvironmentObject var authService: AuthService
 
     var body: some View {
         List {
@@ -93,8 +95,14 @@ struct ParticipantsListView: View {
     }
 
     private func deleteParticipants(offsets: IndexSet) {
+        guard let userID = authService.currentUser?.id else { return }
         withAnimation {
-            offsets.map { participants[$0] }.forEach(viewContext.delete)
+            offsets.map { participants[$0] }.forEach { participant in
+                participant.isSoftDeleted = true
+                participant.updatedAt = Date()
+                participant.updatedBy = Int64(userID)
+                participant.needsSync = true
+            }
             try? viewContext.save()
         }
     }

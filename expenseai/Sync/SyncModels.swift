@@ -1,5 +1,19 @@
 import Foundation
 
+// MARK: - Протоколы для конвертации
+
+protocol DTOConvertible {
+    associatedtype DTO: Codable
+    func toDTO() -> DTO
+}
+
+protocol DTOInstantiable {
+    associatedtype DTO: Codable
+    // TODO: В будущем понадобится для PULL логики
+    // static func fromDTO(_ dto: DTO, in context: NSManagedObjectContext) -> Self
+}
+
+
 // MARK: - Структуры для тела запроса/ответа
 
 /// Полезная нагрузка, которую клиент отправляет на сервер.

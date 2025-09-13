@@ -26,11 +26,11 @@ struct LoginView: View {
             VStack(spacing: 15) {
                 TextField("Email", text: $email)
                     .textFieldStyle(.plain)
+                    .padding()
+                    .background(Color(UIColor.systemGray6))
+                    .cornerRadius(10)
                     .keyboardType(.emailAddress)
                     .autocapitalization(.none)
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
                 
                 HStack {
                     ZStack {
@@ -51,7 +51,7 @@ struct LoginView: View {
                     }
                 }
                 .padding()
-                .background(Color(.systemGray6))
+                .background(Color(UIColor.systemGray6))
                 .cornerRadius(10)
             }
             .padding(.horizontal)
@@ -85,12 +85,5 @@ struct LoginView: View {
             Spacer()
         }
         .padding()
-        .alert(item: $authService.appError) { appError in
-            Alert(
-                title: Text("Ошибка"),
-                message: Text(appError.message),
-                dismissButton: .default(Text("OK"))
-            )
-        }
     }
 }

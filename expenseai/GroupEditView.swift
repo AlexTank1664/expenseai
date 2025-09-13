@@ -26,7 +26,8 @@ struct GroupEditView: View {
     // --- Fetched data for pickers ---
     @FetchRequest(
         entity: Participant.entity(),
-        sortDescriptors: [NSSortDescriptor(keyPath: \Participant.name, ascending: true)]
+        sortDescriptors: [NSSortDescriptor(keyPath: \Participant.name, ascending: true)],
+        predicate: NSPredicate(format: "isSoftDeleted == NO")
     ) var participants: FetchedResults<Participant>
     
     @FetchRequest(
@@ -131,6 +132,7 @@ struct GroupEditView: View {
         // Always update the modification audit fields
         groupToSave.updatedAt = Date()
         groupToSave.updatedBy = Int64(userID)
+        groupToSave.needsSync = true
         
         do {
             try viewContext.save()

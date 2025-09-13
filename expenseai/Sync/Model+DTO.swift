@@ -6,19 +6,8 @@ import Foundation
 // Мы используем их для сериализации в JSON для отправки на сервер
 // и для десериализации из JSON при получении данных с сервера.
 
-protocol DTOConvertible {
-    associatedtype DTO: Codable
-    func toDTO() -> DTO
-}
-
-protocol DTOInstantiable {
-    associatedtype DTO: Codable
-    static func fromDTO(_ dto: DTO) -> Self
-}
-
-
-extension Participant {
-    struct DTO: Codable {
+extension Participant: DTOConvertible {
+    struct DTO: Codable, Identifiable {
         let id: UUID
         let name: String
         let email: String?
@@ -39,8 +28,8 @@ extension Participant {
     }
 }
 
-extension Group {
-    struct DTO: Codable {
+extension Group: DTOConvertible {
+    struct DTO: Codable, Identifiable {
         let id: UUID
         let name: String
         let defaultCurrencyCode: String // Отправляем код, а не весь объект
@@ -61,8 +50,8 @@ extension Group {
     }
 }
 
-extension Expense {
-    struct DTO: Codable {
+extension Expense: DTOConvertible {
+    struct DTO: Codable, Identifiable {
         let id: UUID
         let desc: String
         let amount: Double
@@ -91,8 +80,8 @@ extension Expense {
     }
 }
 
-extension ExpenseShare {
-    struct DTO: Codable {
+extension ExpenseShare: DTOConvertible {
+    struct DTO: Codable, Identifiable {
         // Заметьте, у долей нет isSoftDeleted или updatedAt,
         // они полностью зависят от родительской затраты.
         let id: UUID

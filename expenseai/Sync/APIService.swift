@@ -7,13 +7,20 @@ final class APIService {
     // Синглтон для удобного доступа
     static let shared = APIService()
     
-    private let baseURL = URL(string: "http://127.0.0.1:8000/api/v1")! // TODO: Вынести в конфигурацию
+    // Используем URL из APIConstants
+    private let baseURL: URL
     
     private let session: URLSession
     private let jsonDecoder: JSONDecoder
     private let jsonEncoder: JSONEncoder
     
     private init() {
+        // Убеждаемся, что URL валидный
+        guard let url = URL(string: APIConstants.baseURL) else {
+            fatalError("Base URL is invalid")
+        }
+        self.baseURL = url
+        
         self.session = URLSession(configuration: .default)
         
         self.jsonDecoder = JSONDecoder()
@@ -25,7 +32,8 @@ final class APIService {
     
     /// Основной метод для выполнения запроса к эндпоинту /sync
     func performSync(payload: SyncRequestPayload) async throws -> SyncResponsePayload {
-        let url = baseURL.appendingPathComponent("sync/") // TODO: Уточнить имя эндпоинта
+        // Собираем URL из baseURL и эндпоинта
+        let url = baseURL.appendingPathComponent(APIConstants.Endpoints.sync)
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")

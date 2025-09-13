@@ -119,8 +119,8 @@ struct BalancesView: View {
             Divider().padding(.vertical, 4)
 
             // Expenses section
-            let paidExpenses = group.expensesArray.filter { !$0.is_settlement && $0.paidBy?.id == balance.id }
-            let participantShares = group.expensesArray.flatMap { $0.sharesArray }.filter { !$0.expense!.is_settlement && $0.participant?.id == balance.id }
+            let paidExpenses = group.expensesArray.filter { !$0.is_settlement && $0.paidBy?.id == balance.id && !$0.isSoftDeleted }
+            let participantShares = group.expensesArray.flatMap { $0.sharesArray }.filter { !$0.expense!.is_settlement && $0.participant?.id == balance.id && !$0.expense!.isSoftDeleted }
             
             if !paidExpenses.isEmpty || !participantShares.isEmpty {
                 Text("Затраты")
@@ -138,8 +138,8 @@ struct BalancesView: View {
             }
 
             // Settlements section
-            let settlementsPaid = group.expensesArray.filter { $0.is_settlement && $0.paidBy?.id == balance.id }
-            let settlementsReceived = group.expensesArray.filter { expense in expense.is_settlement && expense.sharesArray.contains(where: { ($0.participant)?.id == balance.id }) }
+            let settlementsPaid = group.expensesArray.filter { $0.is_settlement && $0.paidBy?.id == balance.id && !$0.isSoftDeleted }
+            let settlementsReceived = group.expensesArray.filter { expense in expense.is_settlement && expense.sharesArray.contains(where: { ($0.participant)?.id == balance.id }) && !expense.isSoftDeleted }
             
             if !settlementsPaid.isEmpty || !settlementsReceived.isEmpty {
                 if !paidExpenses.isEmpty || !participantShares.isEmpty {
@@ -211,7 +211,7 @@ struct BalancesView: View {
     private func calculateBalances(for group: Group) -> ([ParticipantBalance], [Currency: [DebtTransaction]]) {
         var balancesByCurrency: [Currency: [Participant: Double]] = [:]
 
-        for expense in group.expensesArray {
+        for expense in group.expensesArray.filter({ !$0.isSoftDeleted }) {
             guard let currency = expense.currency else { continue }
 
             if balancesByCurrency[currency] == nil {

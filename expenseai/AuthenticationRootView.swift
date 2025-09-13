@@ -4,8 +4,10 @@ struct AuthenticationRootView: View {
     @EnvironmentObject var authService: AuthService
     @State private var showLogin = true
     
-    // For the success alert
+    // Для success alert'а
     @State private var showSuccessAlert = false
+    // Для error alert'а
+    @State private var showErrorAlert = false
 
     var body: some View {
         VStack {
@@ -31,6 +33,19 @@ struct AuthenticationRootView: View {
                     authService.registrationSuccessMessage = nil
                 }
             )
+        }
+        .onChange(of: authService.errorMessage) {
+            if authService.errorMessage != nil {
+                showErrorAlert = true
+            }
+        }
+        .alert("Ошибка", isPresented: $showErrorAlert) {
+            Button("OK", role: .cancel) {
+                // Сбрасываем сообщение об ошибке, когда Alert закрывается
+                authService.errorMessage = nil
+            }
+        } message: {
+            Text(authService.errorMessage ?? "Произошла неизвестная ошибка.")
         }
     }
 }

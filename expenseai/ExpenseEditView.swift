@@ -256,8 +256,11 @@ struct ExpenseEditView: View {
     // MARK: - Logic
     
     private func deleteExpense() {
-        guard let expense = expenseToEdit else { return }
-        viewContext.delete(expense)
+        guard let expense = expenseToEdit, let userID = authService.currentUser?.id else { return }
+        expense.isSoftDeleted = true
+        expense.updatedAt = Date()
+        expense.updatedBy = Int64(userID)
+        expense.needsSync = true
         try? viewContext.save()
     }
     
@@ -359,6 +362,7 @@ struct ExpenseEditView: View {
         // Always update audit fields
         expenseToSave.updatedAt = Date()
         expenseToSave.updatedBy = Int64(userID)
+        expenseToSave.needsSync = true
 
         if let oldShares = expenseToSave.shares as? Set<ExpenseShare> {
             for share in oldShares { viewContext.delete(share) }

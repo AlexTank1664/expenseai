@@ -8,6 +8,7 @@ fileprivate enum GroupDetailTab: String, CaseIterable {
 
 struct GroupExpensesView: View {
     @Environment(\.managedObjectContext) private var viewContext
+    @EnvironmentObject var authService: AuthService
     @ObservedObject var group: Group
     @State private var showingAddExpense = false
     @State private var showingEditGroup = false
@@ -21,8 +22,8 @@ struct GroupExpensesView: View {
     init(group: Group) {
         self.group = group
         self._expenses = FetchRequest<Expense>(
-            sortDescriptors: [NSSortDescriptor(keyPath: \Expense.date, ascending: false)],
-            predicate: NSPredicate(format: "group == %@", group)
+            sortDescriptors: [NSSortDescriptor(keyPath: \Expense.createdAt, ascending: false)],
+            predicate: NSPredicate(format: "group == %@ AND isSoftDeleted == NO", group)
         )
     }
     
@@ -117,8 +118,13 @@ struct GroupExpensesView: View {
     }
     
     private func deleteSettlement(_ expense: Expense) {
+        // This is a settlement, which is also an Expense. Soft delete it.
+        guard let userID = authService.currentUser?.id else { return }
         withAnimation {
-            viewContext.delete(expense)
+            expense.isSoftDeleted = true
+            expense.updatedAt = Date()
+            expense.updatedBy = Int64(userID)
+            expense.needsSync = true
             try? viewContext.save()
         }
     }

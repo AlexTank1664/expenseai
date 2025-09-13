@@ -21,6 +21,8 @@
         <attribute name="desc" optional="YES" attributeType="String"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="is_settlement" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="isSoftDeleted" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="needsSync" optional="YES" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <attribute name="updatedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="updatedBy" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="currency" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Currency" inverseName="expenses" inverseEntity="Currency"/>
@@ -38,7 +40,9 @@
         <attribute name="createdAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="createdBy" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="isSoftDeleted" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="needsSync" optional="YES" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <attribute name="updatedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="updatedBy" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="defaultCurrency" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Currency" inverseName="groups" inverseEntity="Currency"/>
@@ -50,7 +54,9 @@
         <attribute name="createdBy" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="email" optional="YES" attributeType="String"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="isSoftDeleted" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="needsSync" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="phone" optional="YES" attributeType="String"/>
         <attribute name="updatedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="updatedBy" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>

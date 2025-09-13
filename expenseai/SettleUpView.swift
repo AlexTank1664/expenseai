@@ -132,6 +132,7 @@ struct SettleUpView: View {
         newPayment.updatedBy = Int64(userID)
         // --------------------
         
+        newPayment.needsSync = true
         newPayment.group = group
         newPayment.currency = currency
         newPayment.paidBy = payer

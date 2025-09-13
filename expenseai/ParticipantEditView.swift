@@ -82,6 +82,7 @@ struct ParticipantEditView: View {
         // Always update modification fields
         participantToSave.updatedAt = Date()
         participantToSave.updatedBy = Int64(userID)
+        participantToSave.needsSync = true
         
         try? viewContext.save()
     }

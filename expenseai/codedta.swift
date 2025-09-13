@@ -12,12 +12,15 @@ class DataController: ObservableObject {
     
     let container: NSPersistentContainer
     
+
+    
     init(inMemory: Bool = false) {
         // Убедитесь, что "Model" - это правильное имя вашего .xcdatamodeld файла
         container = NSPersistentContainer(name: "Model")
         
         if inMemory {
             container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
+            
         }
         
         container.loadPersistentStores { description, error in
@@ -28,6 +31,7 @@ class DataController: ObservableObject {
             // Запускаем заполнение базы данных валютами после загрузки
             self.seedCurrenciesIfNeeded()
         }
+        print(container.persistentStoreDescriptions.first?.url as Any)
     }
     
     private func seedCurrenciesIfNeeded() {
