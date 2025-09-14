@@ -72,13 +72,32 @@ struct GroupsListView: View {
 
 fileprivate struct GroupsListNavigation: ViewModifier {
     @Environment(\.managedObjectContext) private var viewContext
+    @EnvironmentObject var syncEngine: SyncEngine
     @Binding var showingAddGroup: Bool
     @Binding var showingAddParticipant: Bool
     @Binding var groupToEdit: Group?
+    
+    // State for sync functionality
+    @State private var isSyncing = false
+    @State private var syncError: SyncError?
+    @State private var showErrorAlert = false
 
     func body(content: Content) -> some View {
         content
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    if isSyncing {
+                        ProgressView()
+                    } else {
+                        Button(action: {
+                            Task {
+                                await performSync()
+                            }
+                        }) {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                        }
+                    }
+                }
                 ToolbarItem(placement: .primaryAction) {
                     Button(action: { showingAddGroup = true }) {
                         Image(systemName: "plus")
@@ -104,5 +123,25 @@ fileprivate struct GroupsListNavigation: ViewModifier {
             .sheet(isPresented: $showingAddParticipant) {
                 ParticipantEditView(participant: nil)
             }
+            .alert("Ошибка синхронизации", isPresented: $showErrorAlert, presenting: syncError) { error in
+                Button("OK", role: .cancel) { }
+            } message: { error in
+                Text(error.localizedDescription)
+            }
+    }
+    
+    private func performSync() async {
+        isSyncing = true
+        do {
+            try await syncEngine.sync()
+        } catch let error as SyncError {
+            self.syncError = error
+            self.showErrorAlert = true
+        } catch {
+            // Обработка других, неизвестных ошибок
+            self.syncError = .unknownError(error)
+            self.showErrorAlert = true
+        }
+        isSyncing = false
     }
 }

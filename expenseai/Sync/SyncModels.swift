@@ -1,34 +1,12 @@
 import Foundation
 
-// MARK: - Протоколы для конвертации
-
 protocol DTOConvertible {
-    associatedtype DTO: Codable
-    func toDTO() -> DTO
+    associatedtype DTO: Codable, Identifiable
+    func toDTO() -> DTO?
 }
 
-protocol DTOInstantiable {
-    associatedtype DTO: Codable
-    // TODO: В будущем понадобится для PULL логики
-    // static func fromDTO(_ dto: DTO, in context: NSManagedObjectContext) -> Self
-}
-
-
-// MARK: - Структуры для тела запроса/ответа
-
-/// Полезная нагрузка, которую клиент отправляет на сервер.
-struct SyncRequestPayload: Codable {
-    let lastSyncTimestamp: Date?
-    let changes: ChangesPayload
-}
-
-/// Полезная нагрузка, которую сервер присылает клиенту.
-struct SyncResponsePayload: Codable {
-    let serverTimestamp: Date
-    let changes: ChangesPayload
-}
-
-/// Контейнер для всех измененных объектов (DTO).
+/// `ChangesPayload` - это структура, которая содержит массивы всех
+/// измененных объектов (DTO) для отправки на сервер или применения локально.
 struct ChangesPayload: Codable {
     var participants: [Participant.DTO]?
     var groups: [Group.DTO]?
@@ -37,4 +15,27 @@ struct ChangesPayload: Codable {
     static var empty: ChangesPayload {
         ChangesPayload()
     }
+}
+
+// MARK: - Sync Payloads
+
+/// `SyncRequestPayload` - это то, что клиент отправляет на сервер.
+struct SyncRequestPayload: Codable {
+    /// Timestamp последней успешной синхронизации.
+    /// Сервер использует это, чтобы понять, какие изменения нам нужны.
+    /// Может быть nil, если это первая синхронизация.
+    let lastSyncTimestamp: Date?
+    
+    /// Локальные изменения, которые нужно отправить на сервер.
+    let changes: ChangesPayload
+}
+
+/// `SyncResponsePayload` - это то, что сервер присылает в ответ.
+struct SyncResponsePayload: Codable {
+    /// Текущее время на сервере после применения наших изменений.
+    /// Мы сохраним это и будем использовать в следующем запросе.
+    let serverTimestamp: Date
+    
+    /// Изменения с сервера, которые нам нужно применить локально.
+    let changes: ChangesPayload
 }

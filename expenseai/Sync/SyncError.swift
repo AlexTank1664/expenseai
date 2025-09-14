@@ -6,7 +6,8 @@ enum SyncError: Error, LocalizedError {
     case decodingError(Error)
     case unknownError(Error)
     case coreDataError(String)
-    
+    case notAuthenticated
+
     var errorDescription: String? {
         switch self {
         case .networkError(let statusCode, _):
@@ -17,6 +18,8 @@ enum SyncError: Error, LocalizedError {
             return "Неизвестная ошибка: \(error.localizedDescription)"
         case .coreDataError(let message):
             return "Ошибка Core Data: \(message)"
+        case .notAuthenticated:
+            return "Пользователь не аутентифицирован."
         }
     }
 }

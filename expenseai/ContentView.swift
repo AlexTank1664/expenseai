@@ -1,33 +1,24 @@
 import SwiftUI
-import CoreData
 
 struct ContentView: View {
     @EnvironmentObject var authService: AuthService
-    
-    @State private var isMinimumTimeElapsed = false
 
     var body: some View {
-        // Replace Group with ZStack to allow modifiers
+        // ZStack allows us to easily switch between views
+        // without complex conditional logic in the view hierarchy.
         ZStack {
-            if authService.isAuthenticated && authService.isUserLoaded && isMinimumTimeElapsed {
-                // State 1: All ready, show main app
-                MainTabView()
-            } else if authService.isAuthenticated {
-                // State 2: Token exists, but we are waiting for user data or the timer. Show splash.
-                SplashScreenView()
-            } else {
-                // State 3: No token, user needs to log in or register.
+            if !authService.isAuthenticated {
                 AuthenticationRootView()
+            } else {
+                // When authenticated, we check if the user profile is loaded.
+                if authService.isUserLoaded {
+                    // If user is loaded, show the main application view
+                    MainTabView()
+                } else {
+                    // While the user profile is loading, show a splash screen
+                    SplashScreenView()
+                }
             }
-        }
-        .onAppear(perform: startTimer)
-    }
-    
-    private func startTimer() {
-        guard !isMinimumTimeElapsed else { return }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-            self.isMinimumTimeElapsed = true
         }
     }
 }

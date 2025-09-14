@@ -1,24 +1,31 @@
-//
-//  expenseaiApp.swift
-//  expenseai
-//
-//  Created by MacbookPro on 18.08.2025.
-//
-
 import SwiftUI
 
 @main
 struct expenseaiApp: App {
-    @StateObject private var dataController = DataController.shared
+    // Создаем единственный экземпляр PersistenceController
+    let persistenceController = DataController.shared
+    
+    // Создаем сервисы как @StateObject
     @StateObject private var authService = AuthService()
-    @AppStorage("colorScheme") private var colorScheme: String = "system"
+    // Инициализируем SyncEngine сразу при объявлении, передавая ему контекст
+    // и сервис аутентификации.
+    @StateObject private var syncEngine: SyncEngine
 
+    init() {
+        let authService = AuthService()
+        let context = DataController.shared.container.viewContext
+        _authService = StateObject(wrappedValue: authService)
+        _syncEngine = StateObject(wrappedValue: SyncEngine(context: context, authService: authService))
+    }
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environment(\.managedObjectContext, dataController.container.viewContext)
+                // Внедряем оба сервиса в окружение
                 .environmentObject(authService)
-                .preferredColorScheme(colorScheme == "dark" ? .dark : (colorScheme == "light" ? .light : nil))
+                .environmentObject(syncEngine)
+                // Также внедряем managedObjectContext для Core Data
+                .environment(\.managedObjectContext, persistenceController.container.viewContext)
         }
     }
 }
