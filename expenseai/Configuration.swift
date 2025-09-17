@@ -1,12 +1,13 @@
 import Foundation
 
 struct APIConstants {
-    //static let baseURL = "https://sharewithme.club:8379"
-    static let baseURL = "http://127.0.0.1:8000"
+    static let baseURL = "https://sharewithme.club:8379"
+    //static let baseURL = "http://127.0.0.1:8000"
     
 
     struct Endpoints {
-        static let login = "/exp-app/auth/token/login/"
+        static let login = "/auth/token/login/"
+        
         static let register = "/exp-app/auth/users/"
         static let me = "/exp-app/auth/users/me/"
         
