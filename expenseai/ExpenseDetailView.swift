@@ -56,7 +56,7 @@ struct ExpenseDetailView: View {
             HStack {
                 Text("Дата:")
                 Spacer()
-                Text(expense.date?.formatted() ?? "Unknown")
+                Text(expense.createdAt?.formatted() ?? "Unknown")
             }
         }
     }

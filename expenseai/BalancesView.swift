@@ -119,9 +119,28 @@ struct BalancesView: View {
             Divider().padding(.vertical, 4)
 
             // Expenses section
-            let paidExpenses = group.expensesArray.filter { !$0.is_settlement && $0.paidBy?.id == balance.id && !$0.isSoftDeleted }
-            let participantShares = group.expensesArray.flatMap { $0.sharesArray }.filter { !$0.expense!.is_settlement && $0.participant?.id == balance.id && !$0.expense!.isSoftDeleted }
+            let paidExpenses = group.expensesArray
+                .filter { !$0.is_settlement && $0.paidBy?.id == balance.id && !$0.isSoftDeleted }
+                .sorted { $0.createdAt ?? .distantPast > $1.createdAt ?? .distantPast }
+
+            // --- Логика для затрат, в которых этот участник ДОЛЖЕН ---
             
+            // Шаг 1: Получаем и фильтруем все доли
+            let allParticipantShares = group.expensesArray.flatMap { $0.sharesArray }
+                .filter {
+                    // РЕКОМЕНДАЦИЯ: Заменил опасное извлечение '!' на безопасное 'guard'
+                    guard let expense = $0.expense else { return false }
+                    //return !expense.is_settlement && $0.participant?.id == balance.id && expense.paidBy?.id != balance.id && !expense.isSoftDeleted
+                    return !expense.is_settlement && $0.participant?.id == balance.id && !expense.isSoftDeleted
+                }
+            
+            // Шаг 2: Сортируем отфильтрованный массив
+            let participantShares = allParticipantShares.sorted {
+                // ИСПРАВЛЕНИЕ: Используем '?' для безопасного доступа к 'createdAt'
+                ($0.expense?.createdAt ?? .distantPast) > ($1.expense?.createdAt ?? .distantPast)
+            }
+
+            // Если есть какие-либо транзакции для этого участника, показываем секцию
             if !paidExpenses.isEmpty || !participantShares.isEmpty {
                 Text("Затраты")
                     .font(.caption)

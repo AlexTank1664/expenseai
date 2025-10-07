@@ -1,4 +1,5 @@
 import SwiftUI
+import CoreData
 
 @main
 struct expenseaiApp: App {
@@ -16,6 +17,7 @@ struct expenseaiApp: App {
         let context = DataController.shared.container.viewContext
         _authService = StateObject(wrappedValue: authService)
         _syncEngine = StateObject(wrappedValue: SyncEngine(context: context, authService: authService))
+        print("Core Data DB Path: \(NSPersistentContainer.defaultDirectoryURL())")
     }
     
     var body: some Scene {

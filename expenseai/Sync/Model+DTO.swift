@@ -75,24 +75,27 @@ extension Expense: DTOConvertible {
         let currencyCode: String
         let paidByID: UUID
         let shares: [ExpenseShare.DTO]
-        let isSoftDeleted: Bool
+        let createdAt: Date
         let updatedAt: Date
+        let isSoftDeleted: Bool
     }
     
     func toDTO() -> DTO? {
         // Use guard let for safe unwrapping. If any required relationship is missing,
         // we print a warning and return nil, preventing the app from crashing.
-        guard let id = self.id,
-              let updatedAt = self.updatedAt,
+        guard let id,
+              let updatedAt,
               let groupID = self.group?.id,
               let currencyCode = self.currency?.c_code,
-              let paidByID = self.paidBy?.id else {
-            print("⚠️ Skipping inconsistent expense record. Expense desc: \(self.desc ?? "N/A")")
+              let paidByID = self.paidBy?.id
+        else {
+            // Если какое-то из обязательных полей отсутствует,
+            // мы не можем создать валидный DTO.
             return nil
         }
 
         // Also ensure all shares can be converted
-        let shareDTOs = self.sharesArray.compactMap { $0.toDTO() }
+        let shareDTOs = (self.shares as? Set<ExpenseShare> ?? []).compactMap { $0.toDTO() }
         if shareDTOs.count != self.sharesArray.count {
             print("⚠️ Skipping expense due to inconsistent shares. Expense desc: \(self.desc ?? "N/A")")
             return nil
@@ -107,8 +110,9 @@ extension Expense: DTOConvertible {
             currencyCode: currencyCode,
             paidByID: paidByID,
             shares: shareDTOs,
-            isSoftDeleted: self.isSoftDeleted,
-            updatedAt: updatedAt
+            createdAt: self.createdAt ?? updatedAt,
+            updatedAt: updatedAt,
+            isSoftDeleted: self.isSoftDeleted
         )
     }
 }

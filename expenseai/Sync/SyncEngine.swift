@@ -363,6 +363,7 @@ extension Expense: Reconcilable {
         self.desc = dto.desc
         self.amount = dto.amount
         self.is_settlement = dto.is_settlement
+        self.createdAt = dto.createdAt
         self.updatedAt = dto.updatedAt
         self.isSoftDeleted = false
         self.needsSync = false
