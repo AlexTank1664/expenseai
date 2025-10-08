@@ -26,6 +26,6 @@ struct CurrenciesListView: View {
                 }
             }
         }
-        .navigationTitle("Валюты")
+        .navigationTitle("Currencies")
     }
 }

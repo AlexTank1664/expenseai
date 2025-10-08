@@ -2,10 +2,10 @@ import SwiftUI
 import CoreData
 
 enum DistributionType: String, CaseIterable, Identifiable {
-    case equally = "Поровну"
-    case parts = "По частям"
-    case percentage = "По процентам"
-    case manually = "Вручную"
+    case equally = "Equally"
+    case parts = "Parts"
+    case percentage = "Percent"
+    case manually = "Manual"
 
     var id: String { self.rawValue }
 }
@@ -40,7 +40,7 @@ struct ExpenseEditView: View {
         predicate: NSPredicate(format: "is_active == YES")
     ) var currencies: FetchedResults<Currency>
     
-    var navigationTitle: String { expenseToEdit == nil ? "Новые затраты" : "Редактировать затраты" }
+    var navigationTitle: String { expenseToEdit == nil ? "New expense" : "Edit expense" }
     var sortedParticipants: [Participant] { participants.sorted { $0.name ?? "" < $1.name ?? "" } }
     
     // Validation
@@ -64,7 +64,7 @@ struct ExpenseEditView: View {
                 
                 if expenseToEdit != nil {
                     Section {
-                        Button("Удалить затрату", role: .destructive) {
+                        Button("Delete expense", role: .destructive) {
                             showingDeleteAlert = true
                         }
                     }
@@ -72,9 +72,9 @@ struct ExpenseEditView: View {
             }
             .navigationTitle(navigationTitle)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Отмена") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Сохранить") { save(); dismiss() }
+                    Button("Save") { save(); dismiss() }
                         .disabled(isSaveDisabled)
                 }
             }
@@ -83,14 +83,14 @@ struct ExpenseEditView: View {
                     MultiSelectParticipantView(allParticipants: selectedGroup?.membersArray ?? [], selectedParticipants: $participants)
                 }
             }
-            .alert("Удалить затрату?", isPresented: $showingDeleteAlert) {
-                Button("Удалить", role: .destructive) {
+            .alert("Delete expense?", isPresented: $showingDeleteAlert) {
+                Button("Delete", role: .destructive) {
                     deleteExpense()
                     dismiss()
                 }
-                Button("Отмена", role: .cancel) { }
+                Button("Cancel", role: .cancel) { }
             } message: {
-                Text("Вы уверены, что хотите удалить эту затрату? Это действие нельзя отменить.")
+                Text("Are you sure to delete this expense? This action cannot be undone")
             }
             .onAppear(perform: setupInitialState)
             .onChange(of: amount) { recalculateShares() }
@@ -111,14 +111,14 @@ struct ExpenseEditView: View {
     private var basicInfoSection: some View {
         Section {
             HStack {
-                TextField("Сумма", value: $amount, format: .number.precision(.fractionLength(Int(selectedCurrency?.decimal_digits ?? 2))))
+                TextField("Amount", value: $amount, format: .number.precision(.fractionLength(Int(selectedCurrency?.decimal_digits ?? 2))))
                     #if os(iOS)
                     .keyboardType(.decimalPad)
                     #endif
                 Text(selectedCurrency?.symbol_native ?? "")
                     .foregroundColor(.gray)
             }
-            TextField("Описание", text: $descriptionText)
+            TextField("Description", text: $descriptionText)
         }
     }
     
@@ -126,20 +126,20 @@ struct ExpenseEditView: View {
     private var groupAndPayerSection: some View {
         Section {
             HStack {
-                Text("Группа")
+                Text("Group")
                 Spacer()
-                Text(selectedGroup?.name ?? "Не выбрана").foregroundColor(.gray)
+                Text(selectedGroup?.name ?? "Not selected").foregroundColor(.gray)
             }
-            Picker("Валюта", selection: $selectedCurrency) {
-                Text("Не выбрана").tag(nil as Currency?)
+            Picker("Currency", selection: $selectedCurrency) {
+                Text("Not selected").tag(nil as Currency?)
                 ForEach(currencies, id: \.self) { currency in
                     Text("\(currency.currency_name ?? "") (\(currency.symbol_native ?? ""))").tag(currency as Currency?)
                 }
             }
             .disabled(selectedGroup == nil)
             
-            Picker("Оплатил", selection: $selectedPayer) {
-                Text("Не выбран").tag(nil as Participant?)
+            Picker("Paid by", selection: $selectedPayer) {
+                Text("Not selected").tag(nil as Participant?)
                 ForEach(selectedGroup?.membersArray ?? [], id: \.self) { participant in
                     Text(participant.name ?? "Unknown").tag(participant as Participant?)
                 }
@@ -166,8 +166,8 @@ struct ExpenseEditView: View {
     
     @ViewBuilder
     private var distributionMethodSection: some View {
-        Section(header: Text("Метод распределения")) {
-            Picker("Метод", selection: $distributionType) {
+        Section(header: Text("Split method")) {
+            Picker("Method", selection: $distributionType) {
                 ForEach(DistributionType.allCases) { type in
                     Text(type.rawValue).tag(type)
                 }
@@ -179,7 +179,7 @@ struct ExpenseEditView: View {
     @ViewBuilder
     private var distributionDetailsSection: some View {
         if !participants.isEmpty {
-            Section(header: Text("Распределение затрат"), footer: distributionFooter) {
+            Section(header: Text("Distribution"), footer: distributionFooter) {
                 ForEach(sortedParticipants, id: \.id) { participant in
                     distributionRow(for: participant)
                 }
@@ -203,7 +203,7 @@ struct ExpenseEditView: View {
                     .foregroundColor(.gray)
                     .frame(minWidth: 60, alignment: .trailing)
 
-                TextField("Части", value: Binding(get: { shareParts[participant] ?? 1.0 }, set: { shareParts[participant] = $0 }), format: .number)
+                TextField("Parts", value: Binding(get: { shareParts[participant] ?? 1.0 }, set: { shareParts[participant] = $0 }), format: .number)
                     .multilineTextAlignment(.trailing)
                     .frame(width: 60)
                     #if os(iOS)
@@ -214,7 +214,7 @@ struct ExpenseEditView: View {
                     .foregroundColor(.gray)
                     .frame(minWidth: 60, alignment: .trailing)
                 
-                TextField("Процент", value: Binding(get: { sharePercentages[participant] ?? 0.0 }, set: { sharePercentages[participant] = $0 }), format: .number)
+                TextField("Percent", value: Binding(get: { sharePercentages[participant] ?? 0.0 }, set: { sharePercentages[participant] = $0 }), format: .number)
                     .multilineTextAlignment(.trailing)
                     .frame(width: 80)
                     .overlay(Text("%").foregroundColor(.gray).padding(.leading), alignment: .trailing)
@@ -222,7 +222,7 @@ struct ExpenseEditView: View {
                     .keyboardType(.decimalPad)
                     #endif
             case .manually:
-                TextField("Сумма", value: Binding(get: { shares[participant] ?? 0.0 }, set: { shares[participant] = $0 }), format: .number.precision(.fractionLength(2)))
+                TextField("Amount", value: Binding(get: { shares[participant] ?? 0.0 }, set: { shares[participant] = $0 }), format: .number.precision(.fractionLength(2)))
                     .multilineTextAlignment(.trailing)
                     #if os(iOS)
                     .keyboardType(.decimalPad)
@@ -235,18 +235,18 @@ struct ExpenseEditView: View {
     private var distributionFooter: some View {
         switch distributionType {
         case .parts:
-            Text("Всего частей: \(totalParts, format: .number)")
+            Text("Tota parts: \(totalParts, format: .number)")
         case .percentage:
             let color = totalPercentage == 100.0 ? Color.green : Color.red
-            Text("Всего: \(totalPercentage, format: .number) %")
+            Text("Total: \(totalPercentage, format: .number) %")
                 .foregroundColor(color)
         case .manually:
             let total = totalManualAmount
             let remaining = amount - total
             let color = abs(remaining) < 0.01 ? Color.green : Color.red
             VStack(alignment: .leading) {
-                Text("Введено: \(total, format: .number.precision(.fractionLength(2)))")
-                Text("Осталось: \(remaining, format: .number.precision(.fractionLength(2)))")
+                Text("Assigned: \(total, format: .number.precision(.fractionLength(2)))")
+                Text("Left: \(remaining, format: .number.precision(.fractionLength(2)))")
             }.foregroundColor(color)
         default:
             EmptyView()
@@ -410,10 +410,10 @@ struct MultiSelectParticipantView: View {
                 .foregroundColor(.primary)
             }
         }
-        .navigationTitle("Выберите участников")
+        .navigationTitle("Choose participants first")
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button("Готово") {
+                Button("Done") {
                     dismiss()
                 }
             }

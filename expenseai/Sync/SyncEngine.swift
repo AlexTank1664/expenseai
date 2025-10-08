@@ -61,20 +61,20 @@ final class SyncEngine: ObservableObject {
         print("🚀 --- Starting Full Sync --- 🚀")
         
         // --- Шаг 1: Загрузка справочников (только PULL) ---
-        syncProgressMessage = "Обновление валют..."
+        syncProgressMessage = "Updating currencies..."
         try await pullAndApply(Currency.self, authToken: token)
 
         // --- Шаг 2: Синхронизация основных данных (PUSH, затем PULL) ---
         // Порядок важен для соблюдения зависимостей:
         // Участники -> Группы -> Затраты
         
-        syncProgressMessage = "Синхронизация участников..."
+        syncProgressMessage = "Updating participants..."
         try await syncEntity(Participant.self, authToken: token)
         
-        syncProgressMessage = "Синхронизация групп..."
+        syncProgressMessage = "Updating groups..."
         try await syncEntity(Group.self, authToken: token)
         
-        syncProgressMessage = "Синхронизация затрат..."
+        syncProgressMessage = "Updating expenses..."
         try await syncEntity(Expense.self, authToken: token)
 
         // --- Шаг 3: Сохранение времени успешной синхронизации ---

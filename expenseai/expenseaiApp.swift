@@ -11,6 +11,7 @@ struct expenseaiApp: App {
     // Инициализируем SyncEngine сразу при объявлении, передавая ему контекст
     // и сервис аутентификации.
     @StateObject private var syncEngine: SyncEngine
+    @AppStorage("colorScheme") private var colorScheme: String = "system"
 
     init() {
         let authService = AuthService()
@@ -28,6 +29,7 @@ struct expenseaiApp: App {
                 .environmentObject(syncEngine)
                 // Также внедряем managedObjectContext для Core Data
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
+                .preferredColorScheme(colorScheme == "dark" ? .dark : (colorScheme == "light" ? .light : nil))
         }
     }
 }

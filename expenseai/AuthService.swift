@@ -52,7 +52,7 @@ class AuthService: ObservableObject {
         do {
             request.httpBody = try JSONEncoder().encode(loginRequest)
         } catch {
-            errorMessage = "Не удалось закодировать данные для входа."
+            errorMessage = "Could not encode login data"
             return
         }
         
@@ -62,7 +62,7 @@ class AuthService: ObservableObject {
             .tryMap { (data, response) -> Data in
                 guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
                     // Пытаемся декодировать ошибку из тела ответа
-                    let errorMessage = "Ошибка аутентификации:" + (self.decodeError(from: data) ?? "Неверный email или пароль.")
+                    let errorMessage = "Authorization error:" + (self.decodeError(from: data) ?? "Wrong email or password")
                     throw AppError(message: errorMessage)
                 }
                 return data
@@ -85,7 +85,7 @@ class AuthService: ObservableObject {
     
     func fetchCurrentUser() {
         guard let token = authToken else {
-            print("Attempted to fetch user but token is nil.")
+            print("Attempted to fetch user but token is nil")
             return
         }
 
@@ -109,7 +109,7 @@ class AuthService: ObservableObject {
                     break
                 case .failure(let error):
                     print("Fetch user error: \(error)")
-                    self?.errorMessage = "Не удалось загрузить профиль пользователя. Пожалуйста, войдите снова."
+                    self?.errorMessage = "Could not load user profile. Please try login again"
                     self?.logout()
                 }
             } receiveValue: { [weak self] user in
@@ -120,7 +120,7 @@ class AuthService: ObservableObject {
 
     func register(firstName: String, lastName: String, email: String, password: String, password2: String) {
         if password != password2 {
-            errorMessage = "Пароли не совпадают."
+            errorMessage = "Passwords do not match."
             return
         }
         
@@ -141,7 +141,7 @@ class AuthService: ObservableObject {
         do {
             request.httpBody = try JSONEncoder().encode(registrationRequest)
         } catch {
-            errorMessage = "Не удалось закодировать данные для регистрации."
+            errorMessage = "Could not encode register data"
             return
         }
 
@@ -150,7 +150,7 @@ class AuthService: ObservableObject {
         URLSession.shared.dataTaskPublisher(for: request)
             .tryMap { (data, response) -> Data in
                 guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
-                    let errorMessage = self.decodeError(from: data) ?? "Произошла ошибка регистрации."
+                    let errorMessage = self.decodeError(from: data) ?? "An error ocurred during registration process"
                     throw AppError(message: errorMessage)
                 }
                 return data
@@ -164,7 +164,7 @@ class AuthService: ObservableObject {
                     self?.errorMessage = error.localizedDescription
                 }
             } receiveValue: { [weak self] response in
-                self?.registrationSuccessMessage = "Вы успешно зарегистрированы, \(response.first_name)! Теперь вы можете войти."
+                self?.registrationSuccessMessage = "You has been succesfully registered, \(response.first_name)! Now you can log in"
             }
             .store(in: &cancellables)
     }
@@ -192,13 +192,13 @@ class AuthService: ObservableObject {
     
     private func buildURL(for endpoint: String) -> URL? {
         guard var urlComponents = URLComponents(string: APIConstants.baseURL) else {
-            errorMessage = "Неверный базовый URL API"
+            errorMessage = "Wrong root API URL"
             return nil
         }
         urlComponents.path = endpoint
         
         guard let url = urlComponents.url else {
-            errorMessage = "Не удалось создать URL для эндпоинта: \(endpoint)"
+            errorMessage = "Could not construct endpoint URL: \(endpoint)"
             return nil
         }
         return url

@@ -26,9 +26,9 @@ struct AuthenticationRootView: View {
         }
         .alert(isPresented: $showSuccessAlert) {
             Alert(
-                title: Text("Успех!"),
+                title: Text("Success!"),
                 message: Text(authService.registrationSuccessMessage ?? ""),
-                dismissButton: .default(Text("OK")) {
+                dismissButton: .default(Text("Ok")) {
                     // Reset the message after the alert is dismissed
                     authService.registrationSuccessMessage = nil
                 }
@@ -39,13 +39,13 @@ struct AuthenticationRootView: View {
                 showErrorAlert = true
             }
         }
-        .alert("Ошибка", isPresented: $showErrorAlert) {
-            Button("OK", role: .cancel) {
+        .alert("Error", isPresented: $showErrorAlert) {
+            Button("Ok", role: .cancel) {
                 // Сбрасываем сообщение об ошибке, когда Alert закрывается
                 authService.errorMessage = nil
             }
         } message: {
-            Text(authService.errorMessage ?? "Произошла неизвестная ошибка.")
+            Text(authService.errorMessage ?? "Unknown error ocurred.")
         }
     }
 }

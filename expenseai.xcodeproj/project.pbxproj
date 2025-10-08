@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FAC62C262E96D8130038B73A /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = FAC62C252E96D8130038B73A /* Localizable.xcstrings */; };
 		FADB5FEB2E63782D00B026A7 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = FADB5FEA2E63782D00B026A7 /* KeychainAccess */; };
 /* End PBXBuildFile section */
 
@@ -31,6 +32,7 @@
 		FA40FEED2E53A627008BC98C /* expenseai.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = expenseai.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA40FEFE2E53A62B008BC98C /* expenseaiTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = expenseaiTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA40FF082E53A62B008BC98C /* expenseaiUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = expenseaiUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FAC62C252E96D8130038B73A /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; name = Localizable.xcstrings; path = expenseai/Localizable.xcstrings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -80,6 +82,7 @@
 		FA40FEE42E53A627008BC98C = {
 			isa = PBXGroup;
 			children = (
+				FAC62C252E96D8130038B73A /* Localizable.xcstrings */,
 				FA40FEEF2E53A627008BC98C /* expenseai */,
 				FA40FF012E53A62B008BC98C /* expenseaiTests */,
 				FA40FF0B2E53A62B008BC98C /* expenseaiUITests */,
@@ -206,6 +209,7 @@
 			knownRegions = (
 				en,
 				Base,
+				ru,
 			);
 			mainGroup = FA40FEE42E53A627008BC98C;
 			minimizedProjectReferenceProxies = 1;
@@ -230,6 +234,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FAC62C262E96D8130038B73A /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -344,6 +349,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
@@ -398,6 +404,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
 			};
 			name = Release;
 		};

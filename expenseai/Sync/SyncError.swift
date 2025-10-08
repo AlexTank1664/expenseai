@@ -11,15 +11,15 @@ enum SyncError: Error, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .networkError(let statusCode, _):
-            return "Ошибка сети: Статус-код \(statusCode)"
+            return "Network error: Status code: \(statusCode)"
         case .decodingError(let error):
-            return "Ошибка декодирования: \(error.localizedDescription)"
+            return "Decode error: \(error.localizedDescription)"
         case .unknownError(let error):
-            return "Неизвестная ошибка: \(error.localizedDescription)"
+            return "Unknown error: \(error.localizedDescription)"
         case .coreDataError(let message):
-            return "Ошибка Core Data: \(message)"
+            return "Core Data error: \(message)"
         case .notAuthenticated:
-            return "Пользователь не аутентифицирован."
+            return "Authorization error during synchronization process."
         }
     }
 }

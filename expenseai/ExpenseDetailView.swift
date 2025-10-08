@@ -10,10 +10,10 @@ struct ExpenseDetailView: View {
             detailsSection
             sharesSection
         }
-        .navigationTitle("Детали затрат")
+        .navigationTitle("Expense detail")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button("Редактировать") {
+                Button("Edit") {
                     showingEditExpense = true
                 }
             }
@@ -28,7 +28,7 @@ struct ExpenseDetailView: View {
         Section {
             if let desc = expense.desc, !desc.isEmpty {
                 VStack(alignment: .leading) {
-                    Text("Описание:")
+                    Text("Description:")
                         .font(.caption)
                         .foregroundColor(.gray)
                     Text(desc)
@@ -36,25 +36,25 @@ struct ExpenseDetailView: View {
             }
             
             HStack {
-                Text("Сумма:")
+                Text("Amount:")
                 Spacer()
                 Text(formatAmount(expense.amount, currency: expense.currency))
             }
 
             HStack {
-                Text("Оплатил:")
+                Text("Paid by:")
                 Spacer()
                 Text(expense.paidBy?.name ?? "Unknown")
             }
 
             HStack {
-                Text("Группа:")
+                Text("Group:")
                 Spacer()
                 Text(expense.group?.name ?? "Unknown")
             }
 
             HStack {
-                Text("Дата:")
+                Text("Paid on:")
                 Spacer()
                 Text(expense.createdAt?.formatted() ?? "Unknown")
             }
@@ -63,7 +63,7 @@ struct ExpenseDetailView: View {
     
     @ViewBuilder
     private var sharesSection: some View {
-        Section(header: Text("Распределение")) {
+        Section(header: Text("Distribution")) {
             ForEach(expense.sharesArray, id: \.id) { share in
                 HStack {
                     Text(share.participant?.name ?? "Unknown")
