@@ -64,7 +64,7 @@ struct ParticipantsListView: View {
             }
             .onDelete(perform: deleteParticipants)
         }
-        .navigationTitle("Участники")
+        .navigationTitle("Participants")
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
                 #if os(iOS)

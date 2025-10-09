@@ -39,16 +39,16 @@ struct SettleUpView: View {
         // Return the NavigationView to provide a context for the toolbar
         NavigationView {
             Form {
-                Section(header: Text("Детали платежа")) {
-                    Picker("Кто заплатил", selection: $payer) {
-                        Text("Не выбран").tag(nil as Participant?)
+                Section(header: Text("Settlement details")) {
+                    Picker("Paid by", selection: $payer) {
+                        Text("Not selected").tag(nil as Participant?)
                         ForEach(group.membersArray, id: \.self) { participant in
                             Text(participant.name ?? "Unknown").tag(participant as Participant?)
                         }
                     }
                     
-                    Picker("Кто получил", selection: $payee) {
-                        Text("Не выбран").tag(nil as Participant?)
+                    Picker("Payee", selection: $payee) {
+                        Text("Not selected").tag(nil as Participant?)
                         ForEach(group.membersArray, id: \.self) { participant in
                             if participant != payer {
                                 Text(participant.name ?? "Unknown").tag(participant as Participant?)
@@ -57,7 +57,7 @@ struct SettleUpView: View {
                     }
                     
                     HStack {
-                        TextField("Сумма", value: $amount, format: .number.precision(.fractionLength(Int(currency?.decimal_digits ?? 2))))
+                        TextField("Amount", value: $amount, format: .number.precision(.fractionLength(Int(currency?.decimal_digits ?? 2))))
                         #if os(iOS)
                             .keyboardType(.decimalPad)
                         #endif
@@ -65,8 +65,8 @@ struct SettleUpView: View {
                             .foregroundColor(.gray)
                     }
                     
-                    Picker("Валюта", selection: $currency) {
-                        Text("Не выбрана").tag(nil as Currency?)
+                    Picker("Currency", selection: $currency) {
+                        Text("Not selected").tag(nil as Currency?)
                         ForEach(currencies, id: \.self) { c in
                             Text("\(c.currency_name ?? "") (\(c.symbol_native ?? ""))").tag(c as Currency?)
                         }
@@ -80,16 +80,16 @@ struct SettleUpView: View {
                 .listRowBackground(Color.clear)
             }
             .onAppear(perform: setupInitialState)
-            .navigationTitle("Погашение долга")
+            .navigationTitle("Debt repayment")
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Отмена") { dismiss() }
+                    Button("Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Сохранить") {
+                    Button("Save") {
                         savePayment()
                         dismiss()
                     }

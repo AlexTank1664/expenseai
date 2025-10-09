@@ -28,7 +28,7 @@ struct GroupsListView: View {
                 NavigationLink(destination: GroupExpensesView(group: group)) {
                     VStack(alignment: .leading) {
                         Text(group.name ?? "Unknown")
-                        Text("Участников: \(group.members?.count ?? 0)")
+                        Text("Participants: \(group.members?.count ?? 0)")
                             .font(.caption)
                             .foregroundColor(.gray)
                     }
@@ -42,8 +42,8 @@ struct GroupsListView: View {
             }
             .onDelete(perform: deleteGroups)
         }
-        .navigationTitle("Группы")
-        .searchable(text: $searchText, prompt: "Поиск групп")
+        .navigationTitle("Groups")
+        .searchable(text: $searchText, prompt: "Group search")
         .modifier(GroupsListNavigation(
             showingAddGroup: $showingAddGroup,
             showingAddParticipant: $showingAddParticipant,
@@ -123,7 +123,7 @@ fileprivate struct GroupsListNavigation: ViewModifier {
             .sheet(isPresented: $showingAddParticipant) {
                 ParticipantEditView(participant: nil)
             }
-            .alert("Ошибка синхронизации", isPresented: $showErrorAlert, presenting: syncError) { error in
+            .alert("Syncronization error", isPresented: $showErrorAlert, presenting: syncError) { error in
                 Button("OK", role: .cancel) { }
             } message: { error in
                 Text(error.localizedDescription)

@@ -8,22 +8,22 @@ struct SettingsView: View {
         Form {
             
 
-            Section(header: Text("Внешний вид")) {
-                Picker("Тема", selection: $colorScheme) {
-                    Text("Системная").tag("system")
-                    Text("Светлая").tag("light")
-                    Text("Темная").tag("dark")
+            Section(header: Text("Appearance")) {
+                Picker("Theme", selection: $colorScheme) {
+                    Text("System").tag("system")
+                    Text("Light").tag("light")
+                    Text("Dark").tag("dark")
                 }
                 .pickerStyle(.segmented)
             }
             
-            Section(header: Text("Управление данными")) {
+            Section(header: Text("Data management")) {
                 NavigationLink(destination: ManageCurrenciesView()) {
-                    Text("Рабочие валюты")
+                    Text("Active currencies")
                 }
             }
             if let user = authService.currentUser {
-                Section(header: Text("Сведения о пользователе")) {
+                Section(header: Text("User details")) {
                     HStack {
                         Text("ID")
                         Spacer()
@@ -31,13 +31,13 @@ struct SettingsView: View {
                             .foregroundColor(.gray)
                     }
                     HStack {
-                        Text("Имя")
+                        Text("First name")
                         Spacer()
                         Text(user.first_name)
                             .foregroundColor(.gray)
                     }
                     HStack {
-                        Text("Фамилия")
+                        Text("Last name")
                         Spacer()
                         Text(user.last_name)
                             .foregroundColor(.gray)
@@ -55,10 +55,10 @@ struct SettingsView: View {
                 Button(role: .destructive, action: {
                     authService.logout()
                 }) {
-                    Text("Выйти")
+                    Text("Logout")
                 }
             }
         }
-        .navigationTitle("Настройки")
+        .navigationTitle("Settings")
     }
 }

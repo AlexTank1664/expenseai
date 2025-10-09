@@ -24,7 +24,13 @@
         }
       }
     },
-    "%lld выбрано" : {
+    "%lld selected" : {
+
+    },
+    "Active currencies" : {
+
+    },
+    "Already have account? **Login**" : {
 
     },
     "Amount" : {
@@ -33,8 +39,21 @@
     "Amount:" : {
 
     },
+    "Appearance" : {
+
+    },
     "Are you sure to delete this expense? This action cannot be undone" : {
 
+    },
+    "Are you sure to delete this settlement (%@ %@)?. This action cannot be undone" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Are you sure to delete this settlement (%1$@ %2$@)?. This action cannot be undone"
+          }
+        }
+      }
     },
     "Assigned: %@" : {
 
@@ -42,7 +61,13 @@
     "Cancel" : {
 
     },
+    "Choose participants" : {
+
+    },
     "Choose participants first" : {
+
+    },
+    "Contact" : {
 
     },
     "Currencies" : {
@@ -51,7 +76,16 @@
     "Currency" : {
 
     },
+    "Dark" : {
+
+    },
+    "Data management" : {
+
+    },
     "Debt repayment" : {
+
+    },
+    "Default currency" : {
 
     },
     "Delete" : {
@@ -61,6 +95,9 @@
 
     },
     "Delete expense?" : {
+
+    },
+    "Delete settlement?" : {
 
     },
     "Description" : {
@@ -96,10 +133,28 @@
     "Expenses" : {
 
     },
+    "First name" : {
+
+    },
+    "General" : {
+
+    },
     "Group" : {
 
     },
+    "Group participants" : {
+
+    },
+    "Group search" : {
+
+    },
+    "Group title" : {
+
+    },
     "Group:" : {
+
+    },
+    "Groups" : {
 
     },
     "How to settle up (%@)" : {
@@ -108,7 +163,19 @@
     "ID" : {
 
     },
+    "Last name" : {
+
+    },
     "Left: %@" : {
+
+    },
+    "Light" : {
+
+    },
+    "Login" : {
+
+    },
+    "Logout" : {
 
     },
     "Method" : {
@@ -117,7 +184,13 @@
     "Multiple currencies" : {
 
     },
+    "No account yet? **Register**" : {
+
+    },
     "No data to calculate" : {
+
+    },
+    "No expenses yet" : {
 
     },
     "No transactions needed" : {
@@ -141,19 +214,64 @@
     "Paid on:" : {
 
     },
+    "Participant name" : {
+
+    },
+    "Participants" : {
+
+    },
+    "Participants: %lld" : {
+
+    },
     "Parts" : {
+
+    },
+    "Password" : {
+
+    },
+    "Password confirm" : {
+
+    },
+    "Payee" : {
+
+    },
+    "PayUp Pal" : {
 
     },
     "Percent" : {
 
     },
+    "Phone" : {
+
+    },
+    "Register" : {
+
+    },
     "Save" : {
+
+    },
+    "Select сurrencies" : {
+
+    },
+    "Settings" : {
+
+    },
+    "Settlement details" : {
 
     },
     "Split method" : {
 
     },
     "Success!" : {
+
+    },
+    "Syncronization error" : {
+
+    },
+    "System" : {
+
+    },
+    "Theme" : {
 
     },
     "Tota parts: %@" : {
@@ -165,167 +283,10 @@
     "Total: %@ %%" : {
 
     },
+    "User details" : {
+
+    },
     "View" : {
-
-    },
-    "Валюта" : {
-
-    },
-    "Валюта по умолчанию" : {
-
-    },
-    "Внешний вид" : {
-
-    },
-    "Войти" : {
-
-    },
-    "Вход в ExpenseAI" : {
-
-    },
-    "Вы уверены, что хотите удалить этот возврат (%@ %@)? Это действие нельзя отменить." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Вы уверены, что хотите удалить этот возврат (%1$@ %2$@)? Это действие нельзя отменить."
-          }
-        }
-      }
-    },
-    "Выберите валюты для использования" : {
-
-    },
-    "Выйти" : {
-
-    },
-    "Группа" : {
-
-    },
-    "Группы" : {
-
-    },
-    "Детали платежа" : {
-
-    },
-    "Зарегистрироваться" : {
-
-    },
-    "Затрат пока нет" : {
-
-    },
-    "Затраты" : {
-
-    },
-    "Имя" : {
-
-    },
-    "Имя участника" : {
-
-    },
-    "Контактная информация" : {
-
-    },
-    "Кто заплатил" : {
-
-    },
-    "Кто получил" : {
-
-    },
-    "Название группы" : {
-
-    },
-    "Настройки" : {
-
-    },
-    "Не выбран" : {
-
-    },
-    "Не выбрана" : {
-
-    },
-    "Нет аккаунта? **Зарегистрироваться**" : {
-
-    },
-    "Основная информация" : {
-
-    },
-    "Отмена" : {
-
-    },
-    "Ошибка синхронизации" : {
-
-    },
-    "Пароль" : {
-
-    },
-    "Повторите пароль" : {
-
-    },
-    "Погашение долга" : {
-
-    },
-    "Поиск групп" : {
-
-    },
-    "Рабочие валюты" : {
-
-    },
-    "Регистрация" : {
-
-    },
-    "Редактировать" : {
-
-    },
-    "Сведения о пользователе" : {
-
-    },
-    "Светлая" : {
-
-    },
-    "Системная" : {
-
-    },
-    "Сначала добавьте участников" : {
-
-    },
-    "Сохранить" : {
-
-    },
-    "Сумма" : {
-
-    },
-    "Телефон" : {
-
-    },
-    "Тема" : {
-
-    },
-    "Темная" : {
-
-    },
-    "Удалить" : {
-
-    },
-    "Удалить возврат?" : {
-
-    },
-    "Уже есть аккаунт? **Войти**" : {
-
-    },
-    "Управление данными" : {
-
-    },
-    "Участники" : {
-
-    },
-    "Участники группы" : {
-
-    },
-    "Участников: %lld" : {
-
-    },
-    "Фамилия" : {
 
     }
   },

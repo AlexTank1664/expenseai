@@ -11,7 +11,7 @@ struct ManageCurrenciesView: View {
 
     var body: some View {
         Form {
-            Section(header: Text("Выберите валюты для использования")) {
+            Section(header: Text("Select сurrencies")) {
                 ForEach(allCurrencies, id: \.self) { currency in
                     Toggle(isOn: Binding(
                         get: { currency.is_active },
@@ -30,7 +30,7 @@ struct ManageCurrenciesView: View {
                 }
             }
         }
-        .navigationTitle("Рабочие валюты")
+        .navigationTitle("Active currencies")
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif

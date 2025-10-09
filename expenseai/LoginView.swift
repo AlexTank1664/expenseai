@@ -19,7 +19,7 @@ struct LoginView: View {
                 .shadow(color: .gray.opacity(0.7), radius: 10, x: 0, y: 5)
                 .padding(.bottom, 20)
 
-            Text("Вход в ExpenseAI")
+            Text("PayUp Pal")
                 .font(.largeTitle)
                 .fontWeight(.bold)
             
@@ -34,11 +34,11 @@ struct LoginView: View {
                 
                 HStack {
                     ZStack {
-                        TextField("Пароль", text: $password)
+                        TextField("Password", text: $password)
                             .textFieldStyle(.plain)
                             .opacity(isPasswordVisible ? 1 : 0)
                         
-                        SecureField("Пароль", text: $password)
+                        SecureField("Password", text: $password)
                             .textFieldStyle(.plain)
                             .opacity(isPasswordVisible ? 0 : 1)
                     }
@@ -63,7 +63,7 @@ struct LoginView: View {
                 Button(action: {
                     authService.login(email: email, password: password)
                 }) {
-                    Text("Войти")
+                    Text("Login")
                         .font(.headline)
                         .foregroundColor(.white)
                         .padding()
@@ -78,7 +78,7 @@ struct LoginView: View {
             Button(action: {
                 showLogin = false
             }) {
-                Text("Нет аккаунта? **Зарегистрироваться**")
+                Text("No account yet? **Register**")
             }
             .padding(.top)
             

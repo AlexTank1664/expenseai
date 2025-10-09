@@ -13,7 +13,7 @@ struct ParticipantEditView: View {
     @State private var phone: String
     
     var navigationTitle: String {
-        participant == nil ? "Новый участник" : "Редактировать"
+        participant == nil ? "New participant" : "Edit"
     }
 
     init(participant: Participant? = nil) {
@@ -26,17 +26,17 @@ struct ParticipantEditView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("Основная информация")) {
-                    TextField("Имя участника", text: $name)
+                Section(header: Text("General")) {
+                    TextField("Participant name", text: $name)
                 }
                 
-                Section(header: Text("Контактная информация")) {
+                Section(header: Text("Contact")) {
                     TextField("Email", text: $email)
                         #if os(iOS)
                         .keyboardType(.emailAddress)
                         .autocapitalization(.none)
                         #endif
-                    TextField("Телефон", text: $phone)
+                    TextField("Phone", text: $phone)
                         #if os(iOS)
                         .keyboardType(.phonePad)
                         #endif
@@ -45,12 +45,12 @@ struct ParticipantEditView: View {
             .navigationTitle(navigationTitle)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Отмена") {
+                    Button("Cancel") {
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Сохранить") {
+                    Button("Save") {
                         saveParticipant()
                         dismiss()
                     }

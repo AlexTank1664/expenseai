@@ -154,9 +154,9 @@ struct ExpenseEditView: View {
             Section {
                 Button(action: { showingParticipantSelector = true }) {
                     HStack {
-                        Text("Участники")
+                        Text("Participants")
                         Spacer()
-                        Text("\(participants.count) выбрано").foregroundColor(.gray)
+                        Text("\(participants.count) selected").foregroundColor(.gray)
                     }
                 }
                 .foregroundColor(.primary)

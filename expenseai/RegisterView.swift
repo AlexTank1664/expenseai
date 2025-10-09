@@ -18,17 +18,17 @@ struct RegisterView: View {
         VStack(spacing: 20) {
             Spacer()
             
-            Text("Регистрация")
+            Text("Register")
                 .font(.largeTitle)
                 .fontWeight(.bold)
             
             VStack(spacing: 15) {
-                TextField("Имя", text: $firstName)
+                TextField("First name", text: $firstName)
                     .padding()
                     .background(Color(.systemGray6))
                     .cornerRadius(10)
                 
-                TextField("Фамилия", text: $lastName)
+                TextField("Last name", text: $lastName)
                     .padding()
                     .background(Color(.systemGray6))
                     .cornerRadius(10)
@@ -40,12 +40,12 @@ struct RegisterView: View {
                     .background(Color(.systemGray6))
                     .cornerRadius(10)
                 
-                SecureField("Пароль", text: $password)
+                SecureField("Password", text: $password)
                     .padding()
                     .background(Color(.systemGray6))
                     .cornerRadius(10)
                 
-                SecureField("Повторите пароль", text: $password2)
+                SecureField("Password confirm", text: $password2)
                     .padding()
                     .background(Color(.systemGray6))
                     .cornerRadius(10)
@@ -64,7 +64,7 @@ struct RegisterView: View {
                         password2: password2
                     )
                 }) {
-                    Text("Зарегистрироваться")
+                    Text("Register")
                         .font(.headline)
                         .foregroundColor(.white)
                         .padding()
@@ -78,7 +78,7 @@ struct RegisterView: View {
             Button(action: {
                 showLogin = true
             }) {
-                Text("Уже есть аккаунт? **Войти**")
+                Text("Already have account? **Login**")
             }
             .padding(.top)
             

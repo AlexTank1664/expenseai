@@ -20,7 +20,7 @@ struct GroupEditView: View {
     }
     
     var navigationTitle: String {
-        isNew ? "Новая группа" : "Редактировать группу"
+        isNew ? "New group" : "Edit group"
     }
 
     // --- Fetched data for pickers ---
@@ -48,19 +48,19 @@ struct GroupEditView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("Основная информация")) {
-                    TextField("Название группы", text: $name)
-                    Picker("Валюта по умолчанию", selection: $selectedCurrency) {
-                        Text("Не выбрана").tag(nil as Currency?)
+                Section(header: Text("General")) {
+                    TextField("Group title", text: $name)
+                    Picker("Default currency", selection: $selectedCurrency) {
+                        Text("Not selected").tag(nil as Currency?)
                         ForEach(currencies, id: \.self) { currency in
                             Text("\(currency.currency_name ?? "") (\(currency.symbol_native ?? ""))").tag(currency as Currency?)
                         }
                     }
                 }
 
-                Section(header: Text("Участники")) {
+                Section(header: Text("Participants")) {
                     if participants.isEmpty {
-                        Text("Сначала добавьте участников")
+                        Text("Choose participants")
                             .foregroundColor(.gray)
                     } else {
                         ForEach(participants, id: \.id) { participant in
@@ -87,12 +87,12 @@ struct GroupEditView: View {
             .navigationTitle(navigationTitle)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Отмена") {
+                    Button("Cancel") {
                         dismiss() // Just dismiss, no need to delete anything
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Сохранить") {
+                    Button("Save") {
                         save()
                         dismiss()
                     }

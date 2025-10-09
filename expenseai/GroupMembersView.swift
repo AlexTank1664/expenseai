@@ -6,12 +6,12 @@ struct GroupMembersView: View {
     
     var body: some View {
         List {
-            Section(header: Text("Участники")) {
+            Section(header: Text("Participants")) {
                 ForEach(group.membersArray, id: \.id) { particapant in
                     Text(particapant.name ?? "Unknown")
                 }
             }
         }
-        .navigationTitle("Участники группы")
+        .navigationTitle("Group participants")
     }
 }

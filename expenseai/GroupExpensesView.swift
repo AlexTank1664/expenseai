@@ -2,8 +2,8 @@ import SwiftUI
 import CoreData
 
 fileprivate enum GroupDetailTab: String, CaseIterable {
-    case expenses = "Затраты"
-    case balances = "Балансы"
+    case expenses = "Expenses"
+    case balances = "Balances"
 }
 
 struct GroupExpensesView: View {
@@ -44,7 +44,7 @@ struct GroupExpensesView: View {
                 BalancesView(group: group)
             }
         }
-        .navigationTitle(group.name ?? "Группа")
+        .navigationTitle(group.name ?? "Group")
         .modifier(GroupExpensesModals(
             group: group,
             showingAddExpense: $showingAddExpense,
@@ -57,9 +57,9 @@ struct GroupExpensesView: View {
     
     private var expensesList: some View {
         List {
-            Section(header: Text("Затраты")) {
+            Section(header: Text("Expenses")) {
                 if expenses.isEmpty {
-                    Text("Затрат пока нет")
+                    Text("No expenses yet")
                         .foregroundColor(.gray)
                 } else {
                     ForEach(expenses) { expense in
@@ -91,9 +91,9 @@ struct GroupExpensesView: View {
     @ViewBuilder
     private func settlementRow(for expense: Expense) -> some View {
         HStack(spacing: 4) {
-            Text(expense.paidBy?.name ?? "Кто-то")
+            Text(expense.paidBy?.name ?? "Some one")
             Image(systemName: "arrow.right")
-            Text(expense.sharesArray.first?.participant?.name ?? "кому-то")
+            Text(expense.sharesArray.first?.participant?.name ?? "to somebody")
             Spacer()
             Text(formatAmount(expense.amount, currency: expense.currency))
         }
@@ -158,16 +158,16 @@ fileprivate struct GroupExpensesModals: ViewModifier {
             .sheet(isPresented: $showingAddExpense) { ExpenseEditView(group: group) }
             .sheet(isPresented: $showingEditGroup) { GroupEditView(group: group) }
             .sheet(isPresented: $showingSettleUp) { SettleUpView(group: group, payer: nil, payee: nil, amount: 0, currency: group.defaultCurrency) }
-            .alert("Удалить возврат?", isPresented: .constant(settlementToDelete != nil), presenting: settlementToDelete) { expense in
-                Button("Удалить", role: .destructive) {
+            .alert("Delete settlement?", isPresented: .constant(settlementToDelete != nil), presenting: settlementToDelete) { expense in
+                Button("Delete", role: .destructive) {
                     deleteAction(expense)
                 }
-                Button("Отмена", role: .cancel) {
+                Button("Cancel", role: .cancel) {
                     settlementToDelete = nil
                 }
             } message: { expense in
                 let amountString = String(format: "%.2f", expense.amount)
-                Text("Вы уверены, что хотите удалить этот возврат (\(amountString) \(expense.currency?.symbol_native ?? ""))? Это действие нельзя отменить.")
+                Text("Are you sure to delete this settlement (\(amountString) \(expense.currency?.symbol_native ?? ""))?. This action cannot be undone")
             }
     }
 }
