@@ -6,6 +6,7 @@ struct LoginView: View {
     @State private var password = ""
     @State private var isPasswordVisible = false
     @EnvironmentObject var authService: AuthService
+    @EnvironmentObject private var localizationManager: LocalizationManager
 
     var body: some View {
         VStack(spacing: 20) {
@@ -19,7 +20,7 @@ struct LoginView: View {
                 .shadow(color: .gray.opacity(0.7), radius: 10, x: 0, y: 5)
                 .padding(.bottom, 20)
 
-            Text("PayUp Pal")
+            Text("PayUp pal")
                 .font(.largeTitle)
                 .fontWeight(.bold)
             

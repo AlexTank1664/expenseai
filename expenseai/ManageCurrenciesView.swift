@@ -3,7 +3,8 @@ import CoreData
 
 struct ManageCurrenciesView: View {
     @Environment(\.managedObjectContext) private var viewContext
-
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    
     @FetchRequest(
         entity: Currency.entity(),
         sortDescriptors: [NSSortDescriptor(keyPath: \Currency.currency_name, ascending: true)]

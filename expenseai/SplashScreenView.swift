@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct SplashScreenView: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    
     var body: some View {
         ZStack {
             // A dark background often looks good for splash screens
@@ -17,7 +19,7 @@ struct SplashScreenView: View {
                     .shadow(color: .black.opacity(0.4), radius: 15, x: 0, y: 10)
                     .padding(.bottom, 30)
                 
-                Text("ExpenseAI")
+                Text("PayUp pal")
                     .font(.system(size: 40, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
 

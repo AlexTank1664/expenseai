@@ -3,6 +3,8 @@ import CoreData
 
 struct GroupsListView: View {
     @Environment(\.managedObjectContext) private var viewContext
+    @EnvironmentObject private var localizationManager: LocalizationManager
+
     @FetchRequest(
         entity: Group.entity(),
         sortDescriptors: [NSSortDescriptor(keyPath: \Group.name, ascending: true)],
@@ -24,11 +26,12 @@ struct GroupsListView: View {
 
     var body: some View {
         List {
+            //Text("Current language is: \(localizationManager.currentLanguage)")
             ForEach(filteredGroups, id: \.id) { group in
                 NavigationLink(destination: GroupExpensesView(group: group)) {
                     VStack(alignment: .leading) {
                         Text(group.name ?? "Unknown")
-                        Text("Participants: \(group.members?.count ?? 0)")
+                        Text(localizationManager.localize(key: "Participants") + ": \(group.members?.count ?? 0)")
                             .font(.caption)
                             .foregroundColor(.gray)
                     }
@@ -42,7 +45,8 @@ struct GroupsListView: View {
             }
             .onDelete(perform: deleteGroups)
         }
-        .navigationTitle("Groups")
+        .navigationTitle(Text(localizationManager.localize(key: "Groups")))
+
         .searchable(text: $searchText, prompt: "Group search")
         .modifier(GroupsListNavigation(
             showingAddGroup: $showingAddGroup,

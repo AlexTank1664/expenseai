@@ -5,6 +5,7 @@ struct GroupEditView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var authService: AuthService
+    @EnvironmentObject private var localizationManager: LocalizationManager
 
     // The group to edit, if it exists. Nil if we are creating a new one.
     let group: Group?

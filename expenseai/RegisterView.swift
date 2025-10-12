@@ -2,6 +2,8 @@ import SwiftUI
 
 struct RegisterView: View {
     @EnvironmentObject var authService: AuthService
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    
     @Binding var showLogin: Bool
     
     @State private var firstName = ""

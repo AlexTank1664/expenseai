@@ -3,6 +3,7 @@ import CoreData
 
 struct GroupMembersView: View {
     @ObservedObject var group: Group
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
         List {

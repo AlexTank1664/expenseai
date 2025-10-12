@@ -35,9 +35,22 @@
 		FAC62C252E96D8130038B73A /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; name = Localizable.xcstrings; path = expenseai/Localizable.xcstrings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		FAC62C2F2E9C08010038B73A /* Exceptions for "expenseai" folder in "expenseai" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Localizable.xcstrings,
+			);
+			target = FA40FEEC2E53A627008BC98C /* expenseai */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		FA40FEEF2E53A627008BC98C /* expenseai */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				FAC62C2F2E9C08010038B73A /* Exceptions for "expenseai" folder in "expenseai" target */,
+			);
 			path = expenseai;
 			sourceTree = "<group>";
 		};

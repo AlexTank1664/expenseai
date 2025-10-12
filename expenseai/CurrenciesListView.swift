@@ -7,6 +7,8 @@ struct CurrenciesListView: View {
         sortDescriptors: [NSSortDescriptor(keyPath: \Currency.c_code, ascending: true)]
     ) var currencies: FetchedResults<Currency>
 
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    
     var body: some View {
         List {
             ForEach(currencies, id: \.self) { currency in
@@ -26,6 +28,6 @@ struct CurrenciesListView: View {
                 }
             }
         }
-        .navigationTitle("Currencies")
+        .navigationTitle(localizationManager.localize(key: "Currencies"))
     }
 }

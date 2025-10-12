@@ -14,6 +14,7 @@ struct ExpenseEditView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var authService: AuthService
+    @EnvironmentObject private var localizationManager: LocalizationManager
 
     // General state
     @State private var amount: Double = 0
@@ -40,7 +41,7 @@ struct ExpenseEditView: View {
         predicate: NSPredicate(format: "is_active == YES")
     ) var currencies: FetchedResults<Currency>
     
-    var navigationTitle: String { expenseToEdit == nil ? "New expense" : "Edit expense" }
+    var navigationTitle: String { expenseToEdit == nil ? localizationManager.localize(key: "New expense") : localizationManager.localize(key: "Edit expense") }
     var sortedParticipants: [Participant] { participants.sorted { $0.name ?? "" < $1.name ?? "" } }
     
     // Validation
@@ -64,7 +65,7 @@ struct ExpenseEditView: View {
                 
                 if expenseToEdit != nil {
                     Section {
-                        Button("Delete expense", role: .destructive) {
+                        Button(localizationManager.localize(key: "Delete expense"), role: .destructive) {
                             showingDeleteAlert = true
                         }
                     }
@@ -72,9 +73,9 @@ struct ExpenseEditView: View {
             }
             .navigationTitle(navigationTitle)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button(localizationManager.localize(key: "Cancel")) { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") { save(); dismiss() }
+                    Button(localizationManager.localize(key: "Save")) { save(); dismiss() }
                         .disabled(isSaveDisabled)
                 }
             }
@@ -83,14 +84,14 @@ struct ExpenseEditView: View {
                     MultiSelectParticipantView(allParticipants: selectedGroup?.membersArray ?? [], selectedParticipants: $participants)
                 }
             }
-            .alert("Delete expense?", isPresented: $showingDeleteAlert) {
-                Button("Delete", role: .destructive) {
+            .alert(localizationManager.localize(key: "Delete expense") + "?", isPresented: $showingDeleteAlert) {
+                Button(localizationManager.localize(key: "Delete"), role: .destructive) {
                     deleteExpense()
                     dismiss()
                 }
-                Button("Cancel", role: .cancel) { }
+                Button(localizationManager.localize(key: "Cancel"), role: .cancel) { }
             } message: {
-                Text("Are you sure to delete this expense? This action cannot be undone")
+                Text(localizationManager.localize(key: "Are you sure to delete this expense? This action cannot be undone"))
             }
             .onAppear(perform: setupInitialState)
             .onChange(of: amount) { recalculateShares() }
@@ -111,14 +112,14 @@ struct ExpenseEditView: View {
     private var basicInfoSection: some View {
         Section {
             HStack {
-                TextField("Amount", value: $amount, format: .number.precision(.fractionLength(Int(selectedCurrency?.decimal_digits ?? 2))))
+                TextField(localizationManager.localize(key: "Amount"), value: $amount, format: .number.precision(.fractionLength(Int(selectedCurrency?.decimal_digits ?? 2))))
                     #if os(iOS)
                     .keyboardType(.decimalPad)
                     #endif
                 Text(selectedCurrency?.symbol_native ?? "")
                     .foregroundColor(.gray)
             }
-            TextField("Description", text: $descriptionText)
+            TextField(localizationManager.localize(key: "Description"), text: $descriptionText)
         }
     }
     
@@ -126,22 +127,22 @@ struct ExpenseEditView: View {
     private var groupAndPayerSection: some View {
         Section {
             HStack {
-                Text("Group")
+                Text(localizationManager.localize(key: "Group"))
                 Spacer()
-                Text(selectedGroup?.name ?? "Not selected").foregroundColor(.gray)
+                Text(selectedGroup?.name ?? localizationManager.localize(key: "Not selected")).foregroundColor(.gray)
             }
-            Picker("Currency", selection: $selectedCurrency) {
-                Text("Not selected").tag(nil as Currency?)
+            Picker(localizationManager.localize(key: "Currency"), selection: $selectedCurrency) {
+                Text(localizationManager.localize(key: "Not selected")).tag(nil as Currency?)
                 ForEach(currencies, id: \.self) { currency in
                     Text("\(currency.currency_name ?? "") (\(currency.symbol_native ?? ""))").tag(currency as Currency?)
                 }
             }
             .disabled(selectedGroup == nil)
             
-            Picker("Paid by", selection: $selectedPayer) {
-                Text("Not selected").tag(nil as Participant?)
+            Picker(localizationManager.localize(key: "Paid by"), selection: $selectedPayer) {
+                Text(localizationManager.localize(key: "Not selected")).tag(nil as Participant?)
                 ForEach(selectedGroup?.membersArray ?? [], id: \.self) { participant in
-                    Text(participant.name ?? "Unknown").tag(participant as Participant?)
+                    Text(participant.name ?? localizationManager.localize(key: "Unknown")).tag(participant as Participant?)
                 }
             }
             .disabled(selectedGroup == nil)
@@ -156,7 +157,7 @@ struct ExpenseEditView: View {
                     HStack {
                         Text("Participants")
                         Spacer()
-                        Text("\(participants.count) selected").foregroundColor(.gray)
+                        Text("\(participants.count) " + localizationManager.localize(key: "selected")).foregroundColor(.gray)
                     }
                 }
                 .foregroundColor(.primary)
@@ -166,10 +167,10 @@ struct ExpenseEditView: View {
     
     @ViewBuilder
     private var distributionMethodSection: some View {
-        Section(header: Text("Split method")) {
-            Picker("Method", selection: $distributionType) {
+        Section(header: Text(localizationManager.localize(key: "Split method"))) {
+            Picker(localizationManager.localize(key: "Method"), selection: $distributionType) {
                 ForEach(DistributionType.allCases) { type in
-                    Text(type.rawValue).tag(type)
+                    Text(localizationManager.localize(key:type.rawValue)).tag(type)
                 }
             }
             .pickerStyle(.segmented)
@@ -179,7 +180,7 @@ struct ExpenseEditView: View {
     @ViewBuilder
     private var distributionDetailsSection: some View {
         if !participants.isEmpty {
-            Section(header: Text("Distribution"), footer: distributionFooter) {
+            Section(header: Text(localizationManager.localize(key: "Distribution")), footer: distributionFooter) {
                 ForEach(sortedParticipants, id: \.id) { participant in
                     distributionRow(for: participant)
                 }
@@ -191,7 +192,7 @@ struct ExpenseEditView: View {
     @ViewBuilder
     private func distributionRow(for participant: Participant) -> some View {
         HStack {
-            Text(participant.name ?? "Unknown")
+            Text(participant.name ?? localizationManager.localize(key: "Unknown"))
             Spacer()
             
             switch distributionType {
@@ -203,7 +204,7 @@ struct ExpenseEditView: View {
                     .foregroundColor(.gray)
                     .frame(minWidth: 60, alignment: .trailing)
 
-                TextField("Parts", value: Binding(get: { shareParts[participant] ?? 1.0 }, set: { shareParts[participant] = $0 }), format: .number)
+                TextField(localizationManager.localize(key: "Parts"), value: Binding(get: { shareParts[participant] ?? 1.0 }, set: { shareParts[participant] = $0 }), format: .number)
                     .multilineTextAlignment(.trailing)
                     .frame(width: 60)
                     #if os(iOS)
@@ -214,7 +215,7 @@ struct ExpenseEditView: View {
                     .foregroundColor(.gray)
                     .frame(minWidth: 60, alignment: .trailing)
                 
-                TextField("Percent", value: Binding(get: { sharePercentages[participant] ?? 0.0 }, set: { sharePercentages[participant] = $0 }), format: .number)
+                TextField(localizationManager.localize(key: "Percent"), value: Binding(get: { sharePercentages[participant] ?? 0.0 }, set: { sharePercentages[participant] = $0 }), format: .number)
                     .multilineTextAlignment(.trailing)
                     .frame(width: 80)
                     .overlay(Text("%").foregroundColor(.gray).padding(.leading), alignment: .trailing)
@@ -222,7 +223,7 @@ struct ExpenseEditView: View {
                     .keyboardType(.decimalPad)
                     #endif
             case .manually:
-                TextField("Amount", value: Binding(get: { shares[participant] ?? 0.0 }, set: { shares[participant] = $0 }), format: .number.precision(.fractionLength(2)))
+                TextField(localizationManager.localize(key: "Amount"), value: Binding(get: { shares[participant] ?? 0.0 }, set: { shares[participant] = $0 }), format: .number.precision(.fractionLength(2)))
                     .multilineTextAlignment(.trailing)
                     #if os(iOS)
                     .keyboardType(.decimalPad)
@@ -235,18 +236,18 @@ struct ExpenseEditView: View {
     private var distributionFooter: some View {
         switch distributionType {
         case .parts:
-            Text("Tota parts: \(totalParts, format: .number)")
+            Text(localizationManager.localize(key: "Total parts")) + Text(": \(totalParts, format: .number)")
         case .percentage:
             let color = totalPercentage == 100.0 ? Color.green : Color.red
-            Text("Total: \(totalPercentage, format: .number) %")
+            Text(localizationManager.localize(key: "Total")) + Text(": \(totalPercentage, format: .number) %")
                 .foregroundColor(color)
         case .manually:
             let total = totalManualAmount
             let remaining = amount - total
             let color = abs(remaining) < 0.01 ? Color.green : Color.red
             VStack(alignment: .leading) {
-                Text("Assigned: \(total, format: .number.precision(.fractionLength(2)))")
-                Text("Left: \(remaining, format: .number.precision(.fractionLength(2)))")
+                Text(localizationManager.localize(key: "Assigned")) + Text(": \(total, format: .number.precision(.fractionLength(2)))")
+                Text(localizationManager.localize(key: "Left")) + Text(":\(remaining, format: .number.precision(.fractionLength(2)))")
             }.foregroundColor(color)
         default:
             EmptyView()
@@ -386,7 +387,7 @@ struct ExpenseEditView: View {
 struct MultiSelectParticipantView: View {
     let allParticipants: [Participant]
     @Binding var selectedParticipants: Set<Participant>
-    
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -410,10 +411,10 @@ struct MultiSelectParticipantView: View {
                 .foregroundColor(.primary)
             }
         }
-        .navigationTitle("Choose participants first")
+        .navigationTitle(localizationManager.localize(key: "Choose participants"))
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button("Done") {
+                Button(localizationManager.localize(key: "Done")) {
                     dismiss()
                 }
             }

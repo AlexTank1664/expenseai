@@ -5,6 +5,7 @@ struct ParticipantEditView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var authService: AuthService
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     let participant: Participant?
 

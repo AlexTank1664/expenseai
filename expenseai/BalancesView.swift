@@ -24,6 +24,7 @@ struct BalancesView: View {
     @ObservedObject var group: Group
     @State private var expandedBalanceID: UUID?
     @State private var settlementToEdit: SettlementSheetItem?
+    @EnvironmentObject private var localizationManager: LocalizationManager
 
     private var calculatedBalances: ([ParticipantBalance], [Currency: [DebtTransaction]]) {
         calculateBalances(for: group)
@@ -50,9 +51,9 @@ struct BalancesView: View {
 
     @ViewBuilder
     private func balancesSection(with participantBalances: [ParticipantBalance]) -> some View {
-        Section(header: Text("Total balance")) {
+        Section(header: Text(localizationManager.localize(key: "Total balance"))) {
             if participantBalances.isEmpty {
-                Text("No data to calculate").foregroundColor(.gray)
+                Text(localizationManager.localize(key: "No data to calculate")).foregroundColor(.gray)
             } else {
                 ForEach(participantBalances) { balance in
                     VStack(alignment: .leading) {
@@ -85,11 +86,11 @@ struct BalancesView: View {
     private func settlementsSection(with debtTransactionsByCurrency: [Currency: [DebtTransaction]]) -> some View {
         if debtTransactionsByCurrency.isEmpty {
             Section {
-                Text("No transactions needed").foregroundColor(.gray)
+                Text(localizationManager.localize(key: "No transactions needed")).foregroundColor(.gray)
             }
         } else {
             ForEach(debtTransactionsByCurrency.keys.sorted { $0.c_code ?? "" < $1.c_code ?? "" }, id: \.self) { currency in
-                Section(header: Text("How to settle up (\(currency.symbol_native ?? ""))")) {
+                Section(header: Text(localizationManager.localize(key: "How to settle up") + " (\(currency.symbol_native ?? ""))")) {
                     if let transactions = debtTransactionsByCurrency[currency], !transactions.isEmpty {
                         ForEach(transactions) { transaction in
                             Button(action: {
@@ -106,7 +107,7 @@ struct BalancesView: View {
                             }
                         }
                     } else {
-                        Text("Everything is settled").foregroundColor(.gray)
+                        Text(localizationManager.localize(key: "Everything is settled")).foregroundColor(.gray)
                     }
                 }
             }
@@ -142,17 +143,17 @@ struct BalancesView: View {
 
             // Если есть какие-либо транзакции для этого участника, показываем секцию
             if !paidExpenses.isEmpty || !participantShares.isEmpty {
-                Text("Expenses")
+                Text(localizationManager.localize(key: "Expenses"))
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .padding(.bottom, -4)
                 
                 ForEach(paidExpenses) { expense in
-                    detailRow(description: expense.desc ?? "No description", amount: expense.amount, currency: expense.currency, isCredit: true)
+                    detailRow(description: expense.desc ?? localizationManager.localize(key: "No description"), amount: expense.amount, currency: expense.currency, isCredit: true)
                 }
                 
                 ForEach(participantShares, id: \.id) { share in
-                    detailRow(description: share.expense?.desc ?? "No description", amount: share.amount, currency: share.expense?.currency, isCredit: false)
+                    detailRow(description: share.expense?.desc ?? localizationManager.localize(key: "No description"), amount: share.amount, currency: share.expense?.currency, isCredit: false)
                 }
             }
 
@@ -164,17 +165,17 @@ struct BalancesView: View {
                 if !paidExpenses.isEmpty || !participantShares.isEmpty {
                     Divider().padding(.vertical, 4)
                 }
-                Text("Debt repayment")
+                Text(localizationManager.localize(key: "Debt repayment"))
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .padding(.bottom, -4)
                 
                 ForEach(settlementsReceived) { expense in
-                    detailRow(description: expense.desc ?? "Settlement", amount: expense.amount, currency: expense.currency, isCredit: true)
+                    detailRow(description: expense.desc ?? localizationManager.localize(key: "Settlement"), amount: expense.amount, currency: expense.currency, isCredit: true)
                 }
                 
                 ForEach(settlementsPaid) { expense in
-                    detailRow(description: expense.desc ?? "Settlement", amount: expense.amount, currency: expense.currency, isCredit: false)
+                    detailRow(description: expense.desc ?? localizationManager.localize(key: "Settlement"), amount: expense.amount, currency: expense.currency, isCredit: false)
                 }
             }
         }
@@ -198,7 +199,7 @@ struct BalancesView: View {
     @ViewBuilder
     private func balanceView(for balance: ParticipantBalance) -> some View {
         if balance.balances.count > 1 {
-            Text("Multiple currencies")
+            Text(localizationManager.localize(key: "Multiple currencies"))
                 .font(.footnote)
                 .foregroundColor(.orange)
         } else if let (currency, amount) = balance.balances.first {
@@ -266,7 +267,7 @@ struct BalancesView: View {
         }
         
         participantBalancesForDisplay = group.membersArray.map { participant in
-            ParticipantBalance(id: participant.id!, name: participant.name ?? "Unknown", balances: balancesPerParticipant[participant] ?? [:])
+            ParticipantBalance(id: participant.id!, name: participant.name ?? localizationManager.localize(key: "Unknown"), balances: balancesPerParticipant[participant] ?? [:])
         }.sorted { $0.name < $1.name }
 
         var transactionsByCurrency: [Currency: [DebtTransaction]] = [:]
@@ -276,8 +277,8 @@ struct BalancesView: View {
             var transactions: [DebtTransaction] = []
 
             while !debtors.isEmpty && !creditors.isEmpty {
-                var debtor = debtors[0]
-                var creditor = creditors[0]
+                let debtor = debtors[0]
+                let creditor = creditors[0]
 
                 let amountToTransfer = min(-debtor.amount, creditor.amount)
                 

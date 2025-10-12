@@ -29,6 +29,7 @@ struct ParticipantsListView: View {
     
     @State private var activeSheet: ActiveSheet?
     @EnvironmentObject var authService: AuthService
+    @EnvironmentObject private var localizationManager: LocalizationManager
 
     var body: some View {
         List {

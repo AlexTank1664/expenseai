@@ -9,6 +9,7 @@ fileprivate enum GroupDetailTab: String, CaseIterable {
 struct GroupExpensesView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @EnvironmentObject var authService: AuthService
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @ObservedObject var group: Group
     @State private var showingAddExpense = false
     @State private var showingEditGroup = false

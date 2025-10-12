@@ -4,16 +4,17 @@ import CoreData
 struct ExpenseDetailView: View {
     @ObservedObject var expense: Expense
     @State private var showingEditExpense = false
+    @EnvironmentObject private var localizationManager: LocalizationManager
 
     var body: some View {
         List {
             detailsSection
             sharesSection
         }
-        .navigationTitle("Expense detail")
+        .navigationTitle(localizationManager.localize(key: "Expense detail"))
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button("Edit") {
+                Button(localizationManager.localize(key: "Edit")) {
                     showingEditExpense = true
                 }
             }
@@ -28,7 +29,7 @@ struct ExpenseDetailView: View {
         Section {
             if let desc = expense.desc, !desc.isEmpty {
                 VStack(alignment: .leading) {
-                    Text("Description:")
+                    Text(localizationManager.localize(key: "Description") + ":")
                         .font(.caption)
                         .foregroundColor(.gray)
                     Text(desc)
@@ -36,25 +37,25 @@ struct ExpenseDetailView: View {
             }
             
             HStack {
-                Text("Amount:")
+                Text(localizationManager.localize(key: "Amount") + ":")
                 Spacer()
                 Text(formatAmount(expense.amount, currency: expense.currency))
             }
 
             HStack {
-                Text("Paid by:")
+                Text(localizationManager.localize(key: "Paid by") + ":")
                 Spacer()
                 Text(expense.paidBy?.name ?? "Unknown")
             }
 
             HStack {
-                Text("Group:")
+                Text(localizationManager.localize(key: "Group") + ":")
                 Spacer()
                 Text(expense.group?.name ?? "Unknown")
             }
 
             HStack {
-                Text("Paid on:")
+                Text(localizationManager.localize(key: "Paid on") + ":")
                 Spacer()
                 Text(expense.createdAt?.formatted() ?? "Unknown")
             }
@@ -63,7 +64,7 @@ struct ExpenseDetailView: View {
     
     @ViewBuilder
     private var sharesSection: some View {
-        Section(header: Text("Distribution")) {
+        Section(header: Text(localizationManager.localize(key: "Distribution"))) {
             ForEach(expense.sharesArray, id: \.id) { share in
                 HStack {
                     Text(share.participant?.name ?? "Unknown")

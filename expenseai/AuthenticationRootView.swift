@@ -2,6 +2,8 @@ import SwiftUI
 
 struct AuthenticationRootView: View {
     @EnvironmentObject var authService: AuthService
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    
     @State private var showLogin = true
     
     // Для success alert'а
@@ -26,9 +28,9 @@ struct AuthenticationRootView: View {
         }
         .alert(isPresented: $showSuccessAlert) {
             Alert(
-                title: Text("Success!"),
+                title: Text(localizationManager.localize(key: "Success!")),
                 message: Text(authService.registrationSuccessMessage ?? ""),
-                dismissButton: .default(Text("Ok")) {
+                dismissButton: .default(Text("OK")) {
                     // Reset the message after the alert is dismissed
                     authService.registrationSuccessMessage = nil
                 }
@@ -40,12 +42,12 @@ struct AuthenticationRootView: View {
             }
         }
         .alert("Error", isPresented: $showErrorAlert) {
-            Button("Ok", role: .cancel) {
+            Button("OK", role: .cancel) {
                 // Сбрасываем сообщение об ошибке, когда Alert закрывается
                 authService.errorMessage = nil
             }
         } message: {
-            Text(authService.errorMessage ?? "Unknown error ocurred.")
+            Text(authService.errorMessage ?? localizationManager.localize(key: "Unknown error ocurred."))
         }
     }
 }
