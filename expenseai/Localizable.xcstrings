@@ -104,23 +104,6 @@
         }
       }
     },
-    "Are you sure to delete this settlement (%@ %@)?. This action cannot be undone" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Are you sure to delete this settlement (%1$@ %2$@)?. This action cannot be undone"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Вы действительно хотите удалить этот возврат (%1$@ %2$@)? Это действие невозможно отменить."
-          }
-        }
-      }
-    },
     "Assigned" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -128,6 +111,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Распределено"
+          }
+        }
+      }
+    },
+    "Balances" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Итоги"
           }
         }
       }

@@ -32,7 +32,7 @@ struct GroupExpensesView: View {
         VStack {
             Picker("View", selection: $selectedTab) {
                 ForEach(GroupDetailTab.allCases, id: \.self) { tab in
-                    Text(tab.rawValue).tag(tab)
+                    Text(localizationManager.localize(key: tab.rawValue)).tag(tab)
                 }
             }
             .pickerStyle(.segmented)

@@ -112,7 +112,13 @@ struct ExpenseEditView: View {
     private var basicInfoSection: some View {
         Section {
             HStack {
-                TextField(localizationManager.localize(key: "Amount"), value: $amount, format: .number.precision(.fractionLength(Int(selectedCurrency?.decimal_digits ?? 2))))
+                //TextField(localizationManager.localize(key: "Amount"), value: $amount, format: .number.precision(.fractionLength(Int(selectedCurrency?.decimal_digits ?? 2))))
+                ClearableTextField(
+                    localizationManager.localize(key: "Amount"),
+                    value: $amount,
+                    format: .number.precision(.fractionLength(Int(selectedCurrency?.decimal_digits ?? 2)))
+                )
+
                     #if os(iOS)
                     .keyboardType(.decimalPad)
                     #endif
@@ -132,7 +138,7 @@ struct ExpenseEditView: View {
                 Text(selectedGroup?.name ?? localizationManager.localize(key: "Not selected")).foregroundColor(.gray)
             }
             Picker(localizationManager.localize(key: "Currency"), selection: $selectedCurrency) {
-                Text(localizationManager.localize(key: "Not selected")).tag(nil as Currency?)
+                //Text(localizationManager.localize(key: "Not selected")).tag(nil as Currency?)
                 ForEach(currencies, id: \.self) { currency in
                     Text("\(currency.currency_name ?? "") (\(currency.symbol_native ?? ""))").tag(currency as Currency?)
                 }
@@ -204,7 +210,8 @@ struct ExpenseEditView: View {
                     .foregroundColor(.gray)
                     .frame(minWidth: 60, alignment: .trailing)
 
-                TextField(localizationManager.localize(key: "Parts"), value: Binding(get: { shareParts[participant] ?? 1.0 }, set: { shareParts[participant] = $0 }), format: .number)
+                //TextField(localizationManager.localize(key: "Parts"), value: Binding(get: { shareParts[participant] ?? 1.0 }, set: { shareParts[participant] = $0 }), format: .number)
+                ClearableTextField("", value: Binding(get: { shareParts[participant] ?? 1.0 }, set: { shareParts[participant] = $0 }), format: .number)
                     .multilineTextAlignment(.trailing)
                     .frame(width: 60)
                     #if os(iOS)
@@ -214,16 +221,35 @@ struct ExpenseEditView: View {
                 Text(shares[participant] ?? 0, format: .number.precision(.fractionLength(2)))
                     .foregroundColor(.gray)
                     .frame(minWidth: 60, alignment: .trailing)
-                
-                TextField(localizationManager.localize(key: "Percent"), value: Binding(get: { sharePercentages[participant] ?? 0.0 }, set: { sharePercentages[participant] = $0 }), format: .number)
+                HStack(spacing: 4) {
+                    ClearableTextField(
+                        //localizationManager.localize(key: "Percent"),
+                        "",
+                        value: Binding(
+                            get: { sharePercentages[participant] ?? 0.0 },
+                            set: { sharePercentages[participant] = $0 }
+                        ),
+                        format: .number
+                    )
                     .multilineTextAlignment(.trailing)
-                    .frame(width: 80)
-                    .overlay(Text("%").foregroundColor(.gray).padding(.leading), alignment: .trailing)
+                    .frame(width: 60)
                     #if os(iOS)
                     .keyboardType(.decimalPad)
                     #endif
+
+                    Text("%")
+                        .foregroundColor(.gray)
+                }
+
+//                TextField(localizationManager.localize(key: "Percent"), value: Binding(get: { sharePercentages[participant] ?? 0.0 }, set: { sharePercentages[participant] = $0 }), format: .number)
+//                    .multilineTextAlignment(.trailing)
+//                    .frame(width: 80)
+//                    .overlay(Text("%").foregroundColor(.gray).padding(.leading), alignment: .trailing)
+//                    #if os(iOS)
+//                    .keyboardType(.decimalPad)
+//                    #endif
             case .manually:
-                TextField(localizationManager.localize(key: "Amount"), value: Binding(get: { shares[participant] ?? 0.0 }, set: { shares[participant] = $0 }), format: .number.precision(.fractionLength(2)))
+                ClearableTextField("", value: Binding(get: { shares[participant] ?? 0.0 }, set: { shares[participant] = $0 }), format: .number.precision(.fractionLength(2)))
                     .multilineTextAlignment(.trailing)
                     #if os(iOS)
                     .keyboardType(.decimalPad)
