@@ -12,7 +12,7 @@ struct ManageCurrenciesView: View {
 
     var body: some View {
         Form {
-            Section(header: Text("Select сurrencies")) {
+            Section(header: Text(localizationManager.localize(key: "Select сurrencies"))) {
                 ForEach(allCurrencies, id: \.self) { currency in
                     Toggle(isOn: Binding(
                         get: { currency.is_active },
@@ -31,7 +31,7 @@ struct ManageCurrenciesView: View {
                 }
             }
         }
-        .navigationTitle("Active currencies")
+        .navigationTitle(localizationManager.localize(key: "Active currencies"))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif

@@ -19,7 +19,7 @@ struct SplashScreenView: View {
                     .shadow(color: .black.opacity(0.4), radius: 15, x: 0, y: 10)
                     .padding(.bottom, 30)
                 
-                Text("PayUp pal")
+                Text(localizationManager.localize(key: "PayUp pal"))
                     .font(.system(size: 40, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
 

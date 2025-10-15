@@ -40,16 +40,16 @@ struct SettleUpView: View {
         // Return the NavigationView to provide a context for the toolbar
         NavigationView {
             Form {
-                Section(header: Text("Settlement details")) {
-                    Picker("Paid by", selection: $payer) {
-                        Text("Not selected").tag(nil as Participant?)
+                Section(header: Text(localizationManager.localize(key: "Settlement details"))) {
+                    Picker(localizationManager.localize(key: "Paid by"), selection: $payer) {
+                        Text(localizationManager.localize(key: "Not selected")).tag(nil as Participant?)
                         ForEach(group.membersArray, id: \.self) { participant in
                             Text(participant.name ?? "Unknown").tag(participant as Participant?)
                         }
                     }
                     
-                    Picker("Payee", selection: $payee) {
-                        Text("Not selected").tag(nil as Participant?)
+                    Picker(localizationManager.localize(key: "Payee"), selection: $payee) {
+                        Text(localizationManager.localize(key: "Not selected")).tag(nil as Participant?)
                         ForEach(group.membersArray, id: \.self) { participant in
                             if participant != payer {
                                 Text(participant.name ?? "Unknown").tag(participant as Participant?)
@@ -58,7 +58,7 @@ struct SettleUpView: View {
                     }
                     
                     HStack {
-                        TextField("Amount", value: $amount, format: .number.precision(.fractionLength(Int(currency?.decimal_digits ?? 2))))
+                        TextField(localizationManager.localize(key: "Amount"), value: $amount, format: .number.precision(.fractionLength(Int(currency?.decimal_digits ?? 2))))
                         #if os(iOS)
                             .keyboardType(.decimalPad)
                         #endif
@@ -66,8 +66,8 @@ struct SettleUpView: View {
                             .foregroundColor(.gray)
                     }
                     
-                    Picker("Currency", selection: $currency) {
-                        Text("Not selected").tag(nil as Currency?)
+                    Picker(localizationManager.localize(key: "Currency"), selection: $currency) {
+                        Text(localizationManager.localize(key: "Not selected")).tag(nil as Currency?)
                         ForEach(currencies, id: \.self) { c in
                             Text("\(c.currency_name ?? "") (\(c.symbol_native ?? ""))").tag(c as Currency?)
                         }
@@ -81,16 +81,16 @@ struct SettleUpView: View {
                 .listRowBackground(Color.clear)
             }
             .onAppear(perform: setupInitialState)
-            .navigationTitle("Debt repayment")
+            .navigationTitle(localizationManager.localize(key: "Debt repayment"))
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button(localizationManager.localize(key: "Cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
+                    Button(localizationManager.localize(key: "Save")) {
                         savePayment()
                         dismiss()
                     }

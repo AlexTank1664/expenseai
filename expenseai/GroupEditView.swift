@@ -21,7 +21,7 @@ struct GroupEditView: View {
     }
     
     var navigationTitle: String {
-        isNew ? "New group" : "Edit group"
+        isNew ? localizationManager.localize(key: "New group") : localizationManager.localize(key: "Edit group")
     }
 
     // --- Fetched data for pickers ---
@@ -49,19 +49,19 @@ struct GroupEditView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("General")) {
-                    TextField("Group title", text: $name)
-                    Picker("Default currency", selection: $selectedCurrency) {
-                        Text("Not selected").tag(nil as Currency?)
+                Section(header: Text(localizationManager.localize(key: "General"))) {
+                    TextField(localizationManager.localize(key: "Group title"), text: $name)
+                    Picker(localizationManager.localize(key: "Default currency"), selection: $selectedCurrency) {
+                        Text(localizationManager.localize(key: "Not selected")).tag(nil as Currency?)
                         ForEach(currencies, id: \.self) { currency in
                             Text("\(currency.currency_name ?? "") (\(currency.symbol_native ?? ""))").tag(currency as Currency?)
                         }
                     }
                 }
 
-                Section(header: Text("Participants")) {
+                Section(header: Text(localizationManager.localize(key: "Participants"))) {
                     if participants.isEmpty {
-                        Text("Choose participants")
+                        Text(localizationManager.localize(key: "Choose participants"))
                             .foregroundColor(.gray)
                     } else {
                         ForEach(participants, id: \.id) { participant in
@@ -88,12 +88,12 @@ struct GroupEditView: View {
             .navigationTitle(navigationTitle)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
+                    Button(localizationManager.localize(key: "Cancel")) {
                         dismiss() // Just dismiss, no need to delete anything
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
+                    Button(localizationManager.localize(key: "Save")) {
                         save()
                         dismiss()
                     }

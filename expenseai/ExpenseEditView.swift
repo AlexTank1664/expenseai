@@ -155,7 +155,7 @@ struct ExpenseEditView: View {
             Section {
                 Button(action: { showingParticipantSelector = true }) {
                     HStack {
-                        Text("Participants")
+                        Text(localizationManager.localize(key: "Participants"))
                         Spacer()
                         Text("\(participants.count) " + localizationManager.localize(key: "selected")).foregroundColor(.gray)
                     }

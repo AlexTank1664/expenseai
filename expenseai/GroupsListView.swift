@@ -38,7 +38,7 @@ struct GroupsListView: View {
                 }
                 .swipeActions {
                     Button(action: { self.groupToEdit = group }) {
-                        Label("Edit", systemImage: "pencil")
+                        Label(localizationManager.localize(key: "Edit"), systemImage: "pencil")
                     }
                     .tint(.blue)
                 }
@@ -47,7 +47,7 @@ struct GroupsListView: View {
         }
         .navigationTitle(Text(localizationManager.localize(key: "Groups")))
 
-        .searchable(text: $searchText, prompt: "Group search")
+        .searchable(text: $searchText, prompt: localizationManager.localize(key: "Group search"))
         .modifier(GroupsListNavigation(
             showingAddGroup: $showingAddGroup,
             showingAddParticipant: $showingAddParticipant,

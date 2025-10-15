@@ -7,12 +7,12 @@ struct GroupMembersView: View {
     
     var body: some View {
         List {
-            Section(header: Text("Participants")) {
+            Section(header: Text(localizationManager.localize(key: "Participants"))) {
                 ForEach(group.membersArray, id: \.id) { particapant in
                     Text(particapant.name ?? "Unknown")
                 }
             }
         }
-        .navigationTitle("Group participants")
+        .navigationTitle(localizationManager.localize(key: "Group participants"))
     }
 }

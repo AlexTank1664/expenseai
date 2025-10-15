@@ -65,7 +65,7 @@ struct ParticipantsListView: View {
             }
             .onDelete(perform: deleteParticipants)
         }
-        .navigationTitle("Participants")
+        .navigationTitle(localizationManager.localize(key: "Participants"))
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
                 #if os(iOS)

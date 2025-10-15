@@ -20,17 +20,17 @@ struct RegisterView: View {
         VStack(spacing: 20) {
             Spacer()
             
-            Text("Register")
+            Text(localizationManager.localize(key: "Register"))
                 .font(.largeTitle)
                 .fontWeight(.bold)
             
             VStack(spacing: 15) {
-                TextField("First name", text: $firstName)
+                TextField(localizationManager.localize(key: "First name"), text: $firstName)
                     .padding()
                     .background(Color(.systemGray6))
                     .cornerRadius(10)
                 
-                TextField("Last name", text: $lastName)
+                TextField(localizationManager.localize(key: "Last name"), text: $lastName)
                     .padding()
                     .background(Color(.systemGray6))
                     .cornerRadius(10)
@@ -42,12 +42,12 @@ struct RegisterView: View {
                     .background(Color(.systemGray6))
                     .cornerRadius(10)
                 
-                SecureField("Password", text: $password)
+                SecureField(localizationManager.localize(key: "Password"), text: $password)
                     .padding()
                     .background(Color(.systemGray6))
                     .cornerRadius(10)
                 
-                SecureField("Password confirm", text: $password2)
+                SecureField(localizationManager.localize(key: "Password confirm"), text: $password2)
                     .padding()
                     .background(Color(.systemGray6))
                     .cornerRadius(10)
@@ -66,7 +66,7 @@ struct RegisterView: View {
                         password2: password2
                     )
                 }) {
-                    Text("Register")
+                    Text(localizationManager.localize(key: "Register"))
                         .font(.headline)
                         .foregroundColor(.white)
                         .padding()
@@ -80,7 +80,7 @@ struct RegisterView: View {
             Button(action: {
                 showLogin = true
             }) {
-                Text("Already have account? **Login**")
+                Text(localizationManager.localize(key: "Already have account? **Login**"))
             }
             .padding(.top)
             

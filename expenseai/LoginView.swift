@@ -35,11 +35,11 @@ struct LoginView: View {
                 
                 HStack {
                     ZStack {
-                        TextField("Password", text: $password)
+                        TextField(localizationManager.localize(key: "Password"), text: $password)
                             .textFieldStyle(.plain)
                             .opacity(isPasswordVisible ? 1 : 0)
                         
-                        SecureField("Password", text: $password)
+                        SecureField(localizationManager.localize(key: "Password"), text: $password)
                             .textFieldStyle(.plain)
                             .opacity(isPasswordVisible ? 0 : 1)
                     }
@@ -64,7 +64,7 @@ struct LoginView: View {
                 Button(action: {
                     authService.login(email: email, password: password)
                 }) {
-                    Text("Login")
+                    Text(localizationManager.localize(key: "Login"))
                         .font(.headline)
                         .foregroundColor(.white)
                         .padding()
@@ -79,7 +79,7 @@ struct LoginView: View {
             Button(action: {
                 showLogin = false
             }) {
-                Text("No account yet? **Register**")
+                Text(localizationManager.localize(key: "No account yet? **Register**"))
             }
             .padding(.top)
             

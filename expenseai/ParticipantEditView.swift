@@ -27,17 +27,17 @@ struct ParticipantEditView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("General")) {
-                    TextField("Participant name", text: $name)
+                Section(header: Text(localizationManager.localize(key: "General"))) {
+                    TextField(localizationManager.localize(key: "Participant name"), text: $name)
                 }
                 
-                Section(header: Text("Contact")) {
+                Section(header: Text(localizationManager.localize(key: "Contact"))) {
                     TextField("Email", text: $email)
                         #if os(iOS)
                         .keyboardType(.emailAddress)
                         .autocapitalization(.none)
                         #endif
-                    TextField("Phone", text: $phone)
+                    TextField(localizationManager.localize(key: "Phone"), text: $phone)
                         #if os(iOS)
                         .keyboardType(.phonePad)
                         #endif
@@ -46,12 +46,12 @@ struct ParticipantEditView: View {
             .navigationTitle(navigationTitle)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
+                    Button(localizationManager.localize(key: "Cancel")) {
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
+                    Button(localizationManager.localize(key: "Save")) {
                         saveParticipant()
                         dismiss()
                     }

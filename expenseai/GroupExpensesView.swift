@@ -45,7 +45,7 @@ struct GroupExpensesView: View {
                 BalancesView(group: group)
             }
         }
-        .navigationTitle(group.name ?? "Group")
+        .navigationTitle(group.name ?? localizationManager.localize(key: "Group"))
         .modifier(GroupExpensesModals(
             group: group,
             showingAddExpense: $showingAddExpense,
@@ -58,9 +58,9 @@ struct GroupExpensesView: View {
     
     private var expensesList: some View {
         List {
-            Section(header: Text("Expenses")) {
+            Section(header: Text(localizationManager.localize(key: "Expenses"))) {
                 if expenses.isEmpty {
-                    Text("No expenses yet")
+                    Text(localizationManager.localize(key: "No expenses yet"))
                         .foregroundColor(.gray)
                 } else {
                     ForEach(expenses) { expense in
@@ -82,7 +82,7 @@ struct GroupExpensesView: View {
     private func expenseRow(for expense: Expense) -> some View {
         NavigationLink(destination: ExpenseDetailView(expense: expense)) {
             HStack {
-                Text(expense.desc ?? "No description")
+                Text(expense.desc ?? localizationManager.localize(key: "No description"))
                 Spacer()
                 Text(formatAmount(expense.amount, currency: expense.currency))
             }
@@ -92,9 +92,9 @@ struct GroupExpensesView: View {
     @ViewBuilder
     private func settlementRow(for expense: Expense) -> some View {
         HStack(spacing: 4) {
-            Text(expense.paidBy?.name ?? "Some one")
+            Text(expense.paidBy?.name ?? localizationManager.localize(key: "Some one"))
             Image(systemName: "arrow.right")
-            Text(expense.sharesArray.first?.participant?.name ?? "to somebody")
+            Text(expense.sharesArray.first?.participant?.name ?? localizationManager.localize(key: "to somebody"))
             Spacer()
             Text(formatAmount(expense.amount, currency: expense.currency))
         }
@@ -133,6 +133,7 @@ struct GroupExpensesView: View {
 
 fileprivate struct GroupExpensesModals: ViewModifier {
     let group: Group
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @Binding var showingAddExpense: Bool
     @Binding var showingEditGroup: Bool
     @Binding var showingSettleUp: Bool
@@ -159,16 +160,16 @@ fileprivate struct GroupExpensesModals: ViewModifier {
             .sheet(isPresented: $showingAddExpense) { ExpenseEditView(group: group) }
             .sheet(isPresented: $showingEditGroup) { GroupEditView(group: group) }
             .sheet(isPresented: $showingSettleUp) { SettleUpView(group: group, payer: nil, payee: nil, amount: 0, currency: group.defaultCurrency) }
-            .alert("Delete settlement?", isPresented: .constant(settlementToDelete != nil), presenting: settlementToDelete) { expense in
-                Button("Delete", role: .destructive) {
+            .alert(localizationManager.localize(key: "Delete settlement?"), isPresented: .constant(settlementToDelete != nil), presenting: settlementToDelete) { expense in
+                Button(localizationManager.localize(key: "Delete"), role: .destructive) {
                     deleteAction(expense)
                 }
-                Button("Cancel", role: .cancel) {
+                Button(localizationManager.localize(key: "Cancel"), role: .cancel) {
                     settlementToDelete = nil
                 }
             } message: { expense in
                 let amountString = String(format: "%.2f", expense.amount)
-                Text("Are you sure to delete this settlement (\(amountString) \(expense.currency?.symbol_native ?? ""))?. This action cannot be undone")
+                Text(localizationManager.localize(key: "Are you sure to delete this settlement")) + Text(" (\(amountString) \(expense.currency?.symbol_native ?? ""))?. ") + Text (localizationManager.localize(key: "This action cannot be undone"))
             }
     }
 }
