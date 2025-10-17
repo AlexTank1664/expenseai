@@ -149,6 +149,12 @@
     "Choose participants first" : {
       "extractionState" : "stale",
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose participants first"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",

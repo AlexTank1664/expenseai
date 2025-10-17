@@ -89,6 +89,7 @@ fileprivate struct GroupsListNavigation: ViewModifier {
     func body(content: Content) -> some View {
         content
             .toolbar {
+                #if os(iOS)
                 ToolbarItem(placement: .navigationBarLeading) {
                     if isSyncing {
                         ProgressView()
@@ -102,6 +103,21 @@ fileprivate struct GroupsListNavigation: ViewModifier {
                         }
                     }
                 }
+                #else
+                ToolbarItem(placement: .primaryAction) {
+                    if isSyncing {
+                        ProgressView()
+                    } else {
+                        Button(action: {
+                            Task {
+                                await performSync()
+                            }
+                        }) {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                        }
+                    }
+                }
+                #endif
                 ToolbarItem(placement: .primaryAction) {
                     Button(action: { showingAddGroup = true }) {
                         Image(systemName: "plus")

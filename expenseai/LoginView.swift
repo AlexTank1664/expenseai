@@ -28,7 +28,7 @@ struct LoginView: View {
                 TextField("Email", text: $email)
                     .textFieldStyle(.plain)
                     .padding()
-                    .background(Color(UIColor.systemGray6))
+                    .background(Color.gray.opacity(0.2))
                     .cornerRadius(10)
                     .keyboardType(.emailAddress)
                     .autocapitalization(.none)
@@ -52,7 +52,7 @@ struct LoginView: View {
                     }
                 }
                 .padding()
-                .background(Color(UIColor.systemGray6))
+                .background(Color.gray.opacity(0.2))
                 .cornerRadius(10)
             }
             .padding(.horizontal)
