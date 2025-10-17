@@ -130,6 +130,14 @@ struct GroupEditView: View {
         groupToSave.defaultCurrency = selectedCurrency
         groupToSave.members = selectedParticipants as NSSet
         
+        // --- НАЧАЛО ИЗМЕНЕНИЙ ---
+        // Теперь мы помечаем всех участников этой группы для синхронизации.
+        // Это гарантирует, что они будут отправлены на сервер вместе с группой.
+        for participant in selectedParticipants {
+            participant.needsSync = true
+        }
+        // --- КОНЕЦ ИЗМЕНЕНИЙ ---
+        
         // Always update the modification audit fields
         groupToSave.updatedAt = Date()
         groupToSave.updatedBy = Int64(userID)

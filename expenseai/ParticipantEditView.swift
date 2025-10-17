@@ -83,7 +83,15 @@ struct ParticipantEditView: View {
         // Always update modification fields
         participantToSave.updatedAt = Date()
         participantToSave.updatedBy = Int64(userID)
-        participantToSave.needsSync = true
+        
+        // --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
+        // Используем правильное имя свойства: `member` вместо `groups`
+        if (participantToSave.member?.count ?? 0) > 0 {
+            participantToSave.needsSync = true
+        } else {
+            participantToSave.needsSync = false
+        }
+        // --- КОНЕЦ ИЗМЕНЕНИЙ ---
         
         try? viewContext.save()
     }
