@@ -10,44 +10,47 @@ struct AuthenticationRootView: View {
     @State private var showSuccessAlert = false
     // Для error alert'а
     @State private var showErrorAlert = false
-
+    
     var body: some View {
-        VStack {
-            if showLogin {
-                LoginView(showLogin: $showLogin)
-            } else {
-                RegisterView(showLogin: $showLogin)
-            }
-        }
-        .onReceive(authService.$registrationSuccessMessage) { message in
-            if message != nil {
-                // When registration is successful, show the alert and switch to the login view
-                self.showSuccessAlert = true
-                self.showLogin = true
-            }
-        }
-        .alert(isPresented: $showSuccessAlert) {
-            Alert(
-                title: Text(localizationManager.localize(key: "Success!")),
-                message: Text(authService.registrationSuccessMessage ?? ""),
-                dismissButton: .default(Text("OK")) {
-                    // Reset the message after the alert is dismissed
-                    authService.registrationSuccessMessage = nil
+        WallpaperBackgroundView{
+            
+            VStack {
+                if showLogin {
+                    LoginView(showLogin: $showLogin)
+                } else {
+                    RegisterView(showLogin: $showLogin)
                 }
-            )
-        }
-        .onChange(of: authService.errorMessage) {
-            if authService.errorMessage != nil {
-                showErrorAlert = true
             }
-        }
-        .alert("Error", isPresented: $showErrorAlert) {
-            Button("OK", role: .cancel) {
-                // Сбрасываем сообщение об ошибке, когда Alert закрывается
-                authService.errorMessage = nil
+            .onReceive(authService.$registrationSuccessMessage) { message in
+                if message != nil {
+                    // When registration is successful, show the alert and switch to the login view
+                    self.showSuccessAlert = true
+                    self.showLogin = true
+                }
             }
-        } message: {
-            Text(authService.errorMessage ?? localizationManager.localize(key: "Unknown error ocurred."))
+            .alert(isPresented: $showSuccessAlert) {
+                Alert(
+                    title: Text(localizationManager.localize(key: "Success!")),
+                    message: Text(authService.registrationSuccessMessage ?? ""),
+                    dismissButton: .default(Text("OK")) {
+                        // Reset the message after the alert is dismissed
+                        authService.registrationSuccessMessage = nil
+                    }
+                )
+            }
+            .onChange(of: authService.errorMessage) {
+                if authService.errorMessage != nil {
+                    showErrorAlert = true
+                }
+            }
+            .alert("Error", isPresented: $showErrorAlert) {
+                Button("OK", role: .cancel) {
+                    // Сбрасываем сообщение об ошибке, когда Alert закрывается
+                    authService.errorMessage = nil
+                }
+            } message: {
+                Text(authService.errorMessage ?? localizationManager.localize(key: "Unknown error ocurred."))
+            }
         }
     }
 }

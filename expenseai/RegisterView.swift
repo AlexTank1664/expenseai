@@ -21,36 +21,54 @@ struct RegisterView: View {
             Spacer()
             
             Text(localizationManager.localize(key: "Register"))
-                .font(.largeTitle)
-                .fontWeight(.bold)
+                .font(.system(size: 40, weight: .bold, design: .rounded))
+                .foregroundColor(.white)
+                .shadow(color: .black, radius: 2, x: 0, y: 2)
             
             VStack(spacing: 15) {
                 TextField(localizationManager.localize(key: "First name"), text: $firstName)
                     .padding()
                     .background(Color.gray.opacity(0.2))
                     .cornerRadius(10)
+                    .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.gray, lineWidth: 1) // Тонкая рамка
+                        )
                 
                 TextField(localizationManager.localize(key: "Last name"), text: $lastName)
                     .padding()
                     .background(Color.gray.opacity(0.2))
                     .cornerRadius(10)
-                
+                    .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.gray, lineWidth: 1) // Тонкая рамка
+                        )
                 TextField("Email", text: $email)
                     .padding()
                     .background(Color.gray.opacity(0.2))
                     .cornerRadius(10)
                     .keyboardType(.emailAddress)
                     .autocapitalization(.none)
-                
+                    .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.gray, lineWidth: 1) // Тонкая рамка
+                        )
                 SecureField(localizationManager.localize(key: "Password"), text: $password)
                     .padding()
                     .background(Color.gray.opacity(0.2))
                     .cornerRadius(10)
-                
+                    .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.gray, lineWidth: 1) // Тонкая рамка
+                        )
                 SecureField(localizationManager.localize(key: "Password confirm"), text: $password2)
                     .padding()
                     .background(Color.gray.opacity(0.2))
                     .cornerRadius(10)
+                    .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.gray, lineWidth: 1) // Тонкая рамка
+                        )
             }
             
             if authService.isLoading {
