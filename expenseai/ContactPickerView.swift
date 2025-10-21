@@ -12,6 +12,8 @@ struct ContactPickerView: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> CNContactPickerViewController {
         let picker = CNContactPickerViewController()
         picker.delegate = context.coordinator
+        // The CNContactPickerViewController has built-in search functionality
+        // No additional configuration needed for search
         return picker
     }
 

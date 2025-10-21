@@ -7,32 +7,42 @@ struct LoginView: View {
     @State private var isPasswordVisible = false
     @EnvironmentObject var authService: AuthService
     @EnvironmentObject private var localizationManager: LocalizationManager
-
+    @State private var opacity: CGFloat = 0.9
+    @State private var scale: CGFloat = 0.8
+    
     var body: some View {
         VStack(spacing: 20) {
             Spacer()
             
-            Image("login-hero-image")
+            Image("chika")
                 .resizable()
                 .scaledToFill()
                 .frame(width: 200, height: 200)
-                .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
-                .shadow(color: .gray.opacity(0.7), radius: 10, x: 0, y: 5)
-                .padding(.bottom, 20)
-
-            Text("PayUp pal")
-                .font(.largeTitle)
-                .fontWeight(.bold)
+                .clipShape(RoundedRectangle(cornerRadius: 40, style: .continuous))
+                .shadow(color: .black.opacity(0.4), radius: 15, x: 0, y: 10)
+                .padding(.bottom, 30)
+                .scaleEffect(scale)
+                .opacity(opacity)
+            
+            Text(localizationManager.localize(key: "Pay Up Pal"))
+                .font(.system(size: 40, weight: .bold, design: .rounded))
+                .foregroundColor(.white)
+                .shadow(color: .black, radius: 2, x: 0, y: 2)
+                .opacity(opacity)
+                
             
             VStack(spacing: 15) {
                 TextField("Email", text: $email)
                     .textFieldStyle(.plain)
                     .padding()
-                    .background(Color(UIColor.systemGray6))
+                    .background(Color.gray.opacity(0.3))
                     .cornerRadius(10)
                     .keyboardType(.emailAddress)
                     .autocapitalization(.none)
-                
+                    .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.gray, lineWidth: 1) // Тонкая рамка
+                        )
                 HStack {
                     ZStack {
                         TextField(localizationManager.localize(key: "Password"), text: $password)
@@ -52,8 +62,12 @@ struct LoginView: View {
                     }
                 }
                 .padding()
-                .background(Color(UIColor.systemGray6))
+                .background(Color.gray.opacity(0.2))
                 .cornerRadius(10)
+                .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Color.gray, lineWidth: 1) // Тонкая рамка
+                    )
             }
             .padding(.horizontal)
             
@@ -71,12 +85,17 @@ struct LoginView: View {
                         .frame(maxWidth: .infinity)
                         .background(Color.blue)
                         .cornerRadius(10)
+                        .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color.gray, lineWidth: 1) // Тонкая рамка
+                            )
                 }
                 .disabled(email.isEmpty || password.isEmpty)
                 .padding(.horizontal)
             }
             
             Button(action: {
+                
                 showLogin = false
             }) {
                 Text(localizationManager.localize(key: "No account yet? **Register**"))
