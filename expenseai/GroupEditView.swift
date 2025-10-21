@@ -27,8 +27,7 @@ struct GroupEditView: View {
     // --- Fetched data for pickers ---
     @FetchRequest(
         entity: Participant.entity(),
-        sortDescriptors: [NSSortDescriptor(keyPath: \Participant.name, ascending: true)],
-        predicate: NSPredicate(format: "isSoftDeleted == NO")
+        sortDescriptors: [NSSortDescriptor(keyPath: \Participant.name, ascending: true)]
     ) var participants: FetchedResults<Participant>
     
     @FetchRequest(
@@ -74,6 +73,13 @@ struct GroupEditView: View {
                             }) {
                                 HStack {
                                     Text(participant.name ?? "Unknown")
+                                    
+                                    if participant.isSoftDeleted {
+                                        Text("(deleted)")
+                                            .font(.caption2)
+                                            .foregroundColor(.gray)
+                                    }
+                                    
                                     Spacer()
                                     if selectedParticipants.contains(participant) {
                                         Image(systemName: "checkmark")

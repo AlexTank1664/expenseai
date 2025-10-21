@@ -230,13 +230,8 @@ final class SyncEngine: ObservableObject {
 
         for dto in dtos {
             let participant = existingParticipantsDict[dto.id] ?? Participant(context: context)
-            if dto.isSoftDeleted {
-                context.delete(participant)
-                continue
-            }
-            if let localDate = participant.updatedAt, localDate >= dto.updatedAt {
-                continue
-            }
+            
+            // Всегда вызываем update. Теперь он сам правильно установит isSoftDeleted.
             participant.update(from: dto, in: context)
         }
     }
@@ -262,9 +257,6 @@ final class SyncEngine: ObservableObject {
                 context.delete(group)
                 continue
             }
-            if let localDate = group.updatedAt, localDate >= dto.updatedAt {
-                continue
-            }
             // Pass the pre-fetched dictionaries to the update method
             try group.update(from: dto, currencies: currenciesByCode, members: membersByID)
         }
@@ -281,9 +273,6 @@ final class SyncEngine: ObservableObject {
             let expense = existingExpensesDict[dto.id] ?? Expense(context: context)
             if dto.isSoftDeleted {
                 context.delete(expense)
-                continue
-            }
-            if let localDate = expense.updatedAt, localDate >= dto.updatedAt {
                 continue
             }
             try expense.update(from: dto, in: context)
@@ -326,7 +315,7 @@ extension Participant: Reconcilable {
         self.email = dto.email
         self.phone = dto.phone
         self.updatedAt = dto.updatedAt
-        self.isSoftDeleted = false
+        self.isSoftDeleted = dto.isSoftDeleted
         self.needsSync = false
     }
     

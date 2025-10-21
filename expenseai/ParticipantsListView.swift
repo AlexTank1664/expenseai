@@ -23,8 +23,7 @@ struct ParticipantsListView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @FetchRequest(
         entity: Participant.entity(),
-        sortDescriptors: [NSSortDescriptor(keyPath: \Participant.name, ascending: true)],
-        predicate: NSPredicate(format: "isSoftDeleted == NO")
+        sortDescriptors: [NSSortDescriptor(keyPath: \Participant.name, ascending: true)]
     ) var participants: FetchedResults<Participant>
     
     @State private var activeSheet: ActiveSheet?
@@ -38,8 +37,16 @@ struct ParticipantsListView: View {
                     activeSheet = .participantEditor(participant)
                 }) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(participant.name ?? "Unknown")
-                            .font(.headline)
+                        HStack {
+                            Text(participant.name ?? "Unknown")
+                                .font(.headline)
+                            
+                            if participant.isSoftDeleted {
+                                Text("(to be deleted)")
+                                    .font(.caption)
+                                    .foregroundColor(.red)
+                            }
+                        }
                         
                         if let email = participant.email, !email.isEmpty {
                             HStack {
