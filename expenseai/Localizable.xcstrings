@@ -20,10 +20,13 @@
     ":%@" : {
 
     },
+    "(" : {
+
+    },
     "(deleted)" : {
 
     },
-    "(to be deleted)" : {
+    ")" : {
 
     },
     "%" : {
@@ -116,6 +119,9 @@
         }
       }
     },
+    "Are you sure you want to delete this participant? A participant can only be deleted if they are not involved in any group as a payer or a recipient." : {
+
+    },
     "Assigned" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -174,6 +180,9 @@
           }
         }
       }
+    },
+    "Confirm Deletion" : {
+
     },
     "Contact" : {
       "localizations" : {
@@ -566,6 +575,9 @@
         }
       }
     },
+    "marked as deleted" : {
+
+    },
     "Method" : {
       "localizations" : {
         "ru" : {
@@ -779,6 +791,9 @@
           }
         }
       }
+    },
+    "Restore" : {
+
     },
     "Russian" : {
       "localizations" : {
