@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "428469e0-fbe6-41d8-b556-43f50d33e43f — копия.jpeg",
+      "filename" : "iconWalletDay.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -13,6 +13,7 @@
           "value" : "dark"
         }
       ],
+      "filename" : "iconWalletNight.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"

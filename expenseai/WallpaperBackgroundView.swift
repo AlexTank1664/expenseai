@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct WallpaperBackgroundView<Content: View>: View {
-    @AppStorage("selectedWallpaper") private var selectedWallpaper: String = "oboi3"
+    @AppStorage("selectedWallpaper") private var selectedWallpaper: String = "oboi7"
     let content: Content
     
     init(@ViewBuilder content: () -> Content) {

@@ -10,7 +10,8 @@ struct WallpapersView: View {
         "oboi3",
         "oboi4",
         "oboi5",
-        "oboi6"
+        "oboi6",
+        "oboi7"
     ]
     
     var body: some View {

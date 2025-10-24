@@ -59,12 +59,13 @@
         }
       }
     },
-    "Already have account? **Login**" : {
+    "Already have account? " : {
+      "extractionState" : "manual",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Уже зарегистрирован? **Вход**"
+            "value" : "Уже зарегистрирован? "
           }
         }
       }
@@ -117,7 +118,14 @@
       }
     },
     "Are you sure you want to delete this participant? A participant can only be deleted if they are not involved in any group as a payer or a recipient." : {
-
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы уверены что хотите удалить этого участника? Участника можно удалить только если он не участвовал ни в одной группе."
+          }
+        }
+      }
     },
     "Assigned" : {
       "extractionState" : "manual",
@@ -179,7 +187,14 @@
       }
     },
     "Confirm Deletion" : {
-
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подтвердить удаление"
+          }
+        }
+      }
     },
     "Contact" : {
       "localizations" : {
@@ -343,14 +358,7 @@
       }
     },
     "English" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "English"
-          }
-        }
-      }
+
     },
     "Equally" : {
       "extractionState" : "manual",
@@ -603,12 +611,13 @@
         }
       }
     },
-    "No account yet? **Register**" : {
+    "No account yet? " : {
+      "extractionState" : "manual",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Еще не зарегистрирован? **Регистрация**"
+            "value" : "Еще не зарегистрирован? "
           }
         }
       }
@@ -787,7 +796,14 @@
       }
     },
     "Restore" : {
-
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Восстановить"
+          }
+        }
+      }
     },
     "Russian" : {
       "localizations" : {

@@ -28,46 +28,51 @@ struct RegisterView: View {
             VStack(spacing: 15) {
                 TextField(localizationManager.localize(key: "First name"), text: $firstName)
                     .padding()
-                    .background(Color.gray.opacity(0.2))
+                    .background(Color.gray.opacity(0.5))
                     .cornerRadius(10)
+                    .foregroundColor(.white)
                     .overlay(
                             RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.gray, lineWidth: 1) // Тонкая рамка
+                                .stroke(Color.gray, lineWidth: 1)
                         )
                 
                 TextField(localizationManager.localize(key: "Last name"), text: $lastName)
                     .padding()
-                    .background(Color.gray.opacity(0.2))
+                    .background(Color.gray.opacity(0.5))
                     .cornerRadius(10)
+                    .foregroundColor(.white)
                     .overlay(
                             RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.gray, lineWidth: 1) // Тонкая рамка
+                                .stroke(Color.gray, lineWidth: 1)
                         )
                 TextField("Email", text: $email)
                     .padding()
-                    .background(Color.gray.opacity(0.2))
+                    .background(Color.gray.opacity(0.5))
                     .cornerRadius(10)
                     .keyboardType(.emailAddress)
+                    .foregroundColor(.white)
                     .autocapitalization(.none)
                     .overlay(
                             RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.gray, lineWidth: 1) // Тонкая рамка
+                                .stroke(Color.gray, lineWidth: 1)
                         )
                 SecureField(localizationManager.localize(key: "Password"), text: $password)
                     .padding()
-                    .background(Color.gray.opacity(0.2))
+                    .background(Color.gray.opacity(0.5))
+                    .foregroundColor(.white)
                     .cornerRadius(10)
                     .overlay(
                             RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.gray, lineWidth: 1) // Тонкая рамка
+                                .stroke(Color.gray, lineWidth: 1)
                         )
                 SecureField(localizationManager.localize(key: "Password confirm"), text: $password2)
                     .padding()
-                    .background(Color.gray.opacity(0.2))
+                    .background(Color.gray.opacity(0.5))
+                    .foregroundColor(.white)
                     .cornerRadius(10)
                     .overlay(
                             RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.gray, lineWidth: 1) // Тонкая рамка
+                                .stroke(Color.gray, lineWidth: 1)
                         )
             }
             
@@ -89,7 +94,7 @@ struct RegisterView: View {
                         .foregroundColor(.white)
                         .padding()
                         .frame(maxWidth: .infinity)
-                        .background(isFormValid ? Color.blue : Color.gray)
+                        .background(isFormValid ? Color.gray : Color.blue)
                         .cornerRadius(10)
                 }
                 .disabled(!isFormValid)
@@ -98,7 +103,13 @@ struct RegisterView: View {
             Button(action: {
                 showLogin = true
             }) {
-                Text(localizationManager.localize(key: "Already have account? **Login**"))
+                (
+                    Text(localizationManager.localize(key: "Already have account? "))
+                    +
+                    Text(localizationManager.localize(key: "Login"))
+                        .fontWeight(.bold)
+                )
+                
             }
             .padding(.top)
             

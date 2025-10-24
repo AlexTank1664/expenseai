@@ -35,7 +35,8 @@ struct LoginView: View {
                 TextField("Email", text: $email)
                     .textFieldStyle(.plain)
                     .padding()
-                    .background(Color.gray.opacity(0.3))
+                    .background(Color.gray.opacity(0.5))
+                    .foregroundColor(.white)
                     .cornerRadius(10)
                     .keyboardType(.emailAddress)
                     .autocapitalization(.none)
@@ -47,10 +48,12 @@ struct LoginView: View {
                     ZStack {
                         TextField(localizationManager.localize(key: "Password"), text: $password)
                             .textFieldStyle(.plain)
+                            .foregroundColor(.white)
                             .opacity(isPasswordVisible ? 1 : 0)
                         
                         SecureField(localizationManager.localize(key: "Password"), text: $password)
                             .textFieldStyle(.plain)
+                            .foregroundColor(.white)
                             .opacity(isPasswordVisible ? 0 : 1)
                     }
                     
@@ -58,15 +61,15 @@ struct LoginView: View {
                         isPasswordVisible.toggle()
                     }) {
                         Image(systemName: isPasswordVisible ? "eye.slash" : "eye")
-                            .foregroundColor(.gray)
+                            .foregroundColor(.white)
                     }
                 }
                 .padding()
-                .background(Color.gray.opacity(0.2))
+                .background(Color.gray.opacity(0.5))
                 .cornerRadius(10)
                 .overlay(
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.gray, lineWidth: 1) // Тонкая рамка
+                            .stroke(Color.gray, lineWidth: 1)
                     )
             }
             .padding(.horizontal)
@@ -98,7 +101,12 @@ struct LoginView: View {
                 
                 showLogin = false
             }) {
-                Text(localizationManager.localize(key: "No account yet? **Register**"))
+                (
+                Text(localizationManager.localize(key: "No account yet? "))
+                +
+                        Text(localizationManager.localize(key: "Register"))
+                            .fontWeight(.bold)
+)
             }
             .padding(.top)
             

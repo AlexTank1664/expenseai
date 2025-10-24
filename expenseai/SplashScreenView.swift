@@ -15,7 +15,7 @@ struct SplashScreenView: View {
                     Image("chika")
                         .resizable()
                         .scaledToFill()
-                        .frame(width: 250, height: 250)
+                        .frame(width: 200, height: 200)
                         .clipShape(RoundedRectangle(cornerRadius: 40, style: .continuous))
                         .shadow(color: .black.opacity(0.4), radius: 15, x: 0, y: 10)
                         .padding(.bottom, 30)
