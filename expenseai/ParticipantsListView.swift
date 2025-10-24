@@ -30,26 +30,21 @@ struct ParticipantsListView: View {
     ) var participants: FetchedResults<Participant>
     
     @State private var activeSheet: ActiveSheet?
-    @State private var showingDeleteConfirmation = false
-    @State private var offsetsToDelete: IndexSet?
+    @State private var participantToDelete: Participant?
     @EnvironmentObject var authService: AuthService
     @EnvironmentObject private var localizationManager: LocalizationManager
 
     var body: some View {
         List {
             ForEach(participants, id: \.id) { participant in
-                Button(action: {
-                    if !participant.isSoftDeleted {
-                        activeSheet = .participantEditor(participant)
-                    }
-                }) {
+                HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
                             Text(participant.name ?? "Unknown")
                                 .font(.headline)
                             
                             if participant.isSoftDeleted {
-                                Text("(" + localizationManager.localize(key: "marked as deleted")  + ")")
+                                Text("(to be deleted)")
                                     .font(.caption)
                                     .foregroundColor(.red)
                             }
@@ -73,7 +68,14 @@ struct ParticipantsListView: View {
                             .foregroundColor(.gray)
                         }
                     }
-                    .padding(.vertical, 4)
+                    Spacer()
+                }
+                .padding(.vertical, 4)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    if !participant.isSoftDeleted {
+                        activeSheet = .participantEditor(participant)
+                    }
                 }
                 .disabled(participant.isSoftDeleted)
                 .foregroundColor(.primary)
@@ -87,8 +89,18 @@ struct ParticipantsListView: View {
                         .tint(.green)
                     }
                 }
+                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                    if !participant.isSoftDeleted {
+                        Button {
+                            // This action is now neutral. It just sets the data.
+                            participantToDelete = participant
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                        .tint(.red) // This makes the swipe action background red.
+                    }
+                }
             }
-            .onDelete(perform: confirmDelete)
         }
         .navigationTitle(localizationManager.localize(key: "Participants"))
         .toolbar {
@@ -118,23 +130,18 @@ struct ParticipantsListView: View {
             #endif
             }
         }
-        .alert(isPresented: $showingDeleteConfirmation) {
+        // This is the new, correct way to handle alerts for list items.
+        // It watches the `participantToDelete` state and presents the alert when it's not nil.
+        .alert(item: $participantToDelete) { participant in
             Alert(
                 title: Text("Confirm Deletion"),
                 message: Text("Are you sure you want to delete this participant? A participant can only be deleted if they are not involved in any group as a payer or a recipient."),
                 primaryButton: .destructive(Text("Delete")) {
-                    if let offsets = offsetsToDelete {
-                        deleteParticipants(offsets: offsets)
-                    }
+                    deleteParticipant(participant)
                 },
                 secondaryButton: .cancel()
             )
         }
-    }
-
-    private func confirmDelete(offsets: IndexSet) {
-        self.offsetsToDelete = offsets
-        self.showingDeleteConfirmation = true
     }
 
     private func restoreParticipant(_ participant: Participant) {
@@ -149,15 +156,13 @@ struct ParticipantsListView: View {
         }
     }
 
-    private func deleteParticipants(offsets: IndexSet) {
+    private func deleteParticipant(_ participant: Participant) {
         guard let userID = authService.currentUser?.id else { return }
         withAnimation {
-            offsets.map { participants[$0] }.forEach { participant in
-                participant.isSoftDeleted = true
-                participant.updatedAt = Date()
-                participant.updatedBy = Int64(userID)
-                participant.needsSync = true
-            }
+            participant.isSoftDeleted = true
+            participant.updatedAt = Date()
+            participant.updatedBy = Int64(userID)
+            participant.needsSync = true
             try? viewContext.save()
         }
     }

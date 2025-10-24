@@ -20,13 +20,10 @@
     ":%@" : {
 
     },
-    "(" : {
-
-    },
     "(deleted)" : {
 
     },
-    ")" : {
+    "(to be deleted)" : {
 
     },
     "%" : {
@@ -574,9 +571,6 @@
           }
         }
       }
-    },
-    "marked as deleted" : {
-
     },
     "Method" : {
       "localizations" : {
