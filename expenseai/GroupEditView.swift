@@ -15,7 +15,26 @@ struct GroupEditView: View {
     @State private var selectedCurrency: Currency?
     @State private var selectedParticipants: Set<Participant> = []
     
+    // --- НАЧАЛО ИЗМЕНЕНИЙ 1: Добавляем состояние для алерта ---
+    @State private var showingValidationAlert = false
+    // --- КОНЕЦ ИЗМЕНЕНИЙ 1 ---
+    
     // Computed properties
+    private var pickerCurrencies: [Currency] {
+        // Начинаем с массива активных валют
+        var availableCurrencies = Array(currencies)
+
+        // Проверяем, есть ли у группы сохраненная валюта
+        // и не содержится ли она уже в списке активных
+        if let groupCurrency = group?.defaultCurrency, !availableCurrencies.contains(groupCurrency) {
+            // Если ее нет, добавляем ее в начало списка
+            availableCurrencies.insert(groupCurrency, at: 0)
+        }
+
+        return availableCurrencies
+    }
+
+    
     private var isNew: Bool {
         group == nil
     }
@@ -52,7 +71,7 @@ struct GroupEditView: View {
                     TextField(localizationManager.localize(key: "Group title"), text: $name)
                     Picker(localizationManager.localize(key: "Default currency"), selection: $selectedCurrency) {
                         Text(localizationManager.localize(key: "Not selected")).tag(nil as Currency?)
-                        ForEach(currencies, id: \.self) { currency in
+                        ForEach(pickerCurrencies, id: \.self) { currency in
                             Text("\(currency.currency_name ?? "") (\(currency.symbol_native ?? ""))").tag(currency as Currency?)
                         }
                     }
@@ -95,15 +114,16 @@ struct GroupEditView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(localizationManager.localize(key: "Cancel")) {
-                        dismiss() // Just dismiss, no need to delete anything
+                        dismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
+                    // --- НАЧАЛО ИЗМЕНЕНИЙ 2: Убираем .disabled и меняем действие ---
                     Button(localizationManager.localize(key: "Save")) {
-                        save()
-                        dismiss()
+                        validateAndSave() // Вызываем новую функцию-валидатор
                     }
-                    .disabled(name.isEmpty || selectedParticipants.isEmpty)
+                    // .disabled(...) <-- Эта строка удалена
+                    // --- КОНЕЦ ИЗМЕНЕНИЙ 2 ---
                 }
             }
             .onAppear {
@@ -112,8 +132,34 @@ struct GroupEditView: View {
                     selectedCurrency = currencies.first
                 }
             }
+            // --- НАЧАЛО ИЗМЕНЕНИЙ 3: Добавляем модификатор .alert ---
+            .alert(localizationManager.localize(key: "Incomplete data"), isPresented: $showingValidationAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(localizationManager.localize(key: "Please fill in the name, select a currency and participants for the group."))
+            }
+            // --- КОНЕЦ ИЗМЕНЕНИЙ 3 ---
         }
     }
+    
+    // --- НАЧАЛО ИЗМЕНЕНИЙ 4: Новая функция для валидации ---
+    private func validateAndSave() {
+        // Проверяем, что имя не пустое (после удаления пробелов),
+        // валюта выбрана и есть хотя бы один участник.
+        let isNameValid = !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        let isCurrencyValid = selectedCurrency != nil
+        let areParticipantsValid = !selectedParticipants.isEmpty
+
+        if isNameValid && isCurrencyValid && areParticipantsValid {
+            // Если все в порядке - сохраняем и закрываем
+            save()
+            dismiss()
+        } else {
+            // Если есть ошибки - показываем алерт
+            showingValidationAlert = true
+        }
+    }
+    // --- КОНЕЦ ИЗМЕНЕНИЙ 4 ---
     
     private func save() {
         guard let userID = authService.currentUser?.id else {

@@ -244,10 +244,12 @@ final class SyncEngine: ObservableObject {
         let existingGroupsDict = Dictionary(uniqueKeysWithValues: existingGroups.map { ($0.id!, $0) })
 
         // --- OPTIMIZATION: Pre-fetch all related objects needed for the updates ---
-        let currencyCodes = Set(dtos.map { $0.defaultCurrencyCode })
+        //let currencyCodes = Set(dtos.map { $0.defaultCurrencyCode })
         let allMemberIDs = Set(dtos.flatMap { $0.memberIDs })
         
-        let currenciesByCode = try fetchCurrencies(with: currencyCodes, in: context)
+        //let currenciesByCode = try fetchCurrencies(with: currencyCodes, in: context)
+        let currenciesByCode = try fetchAllCurrencies(in: context)
+        
         let membersByID = try fetchParticipants(with: Array(allMemberIDs), in: context)
         // --- END OF OPTIMIZATION ---
 
@@ -419,6 +421,17 @@ func fetchCurrencies(with codes: Set<String>, in context: NSManagedObjectContext
         return (code, $0)
     })
 }
+
+func fetchAllCurrencies(in context: NSManagedObjectContext) throws -> [String: Currency] {
+  let request = Currency.fetchRequest()
+  let results = try context.fetch(request)
+
+  return Dictionary(uniqueKeysWithValues: results.compactMap {
+      guard let code = $0.c_code else { return nil }
+      return (code, $0)
+  })
+}
+
 
 func fetchParticipant(with id: UUID, in context: NSManagedObjectContext) throws -> Participant? {
     let request = Participant.fetchRequest()

@@ -48,6 +48,20 @@ struct ParticipantsListView: View {
                                     .font(.caption)
                                     .foregroundColor(.red)
                             }
+                            
+                            // --- НАЧАЛО ИЗМЕНЕНИЙ ---
+                            // Проверяем, совпадает ли email участника с email'ом
+                            // текущего залогиненного пользователя.
+                            if let participantEmail = participant.email,
+                               let currentUserEmail = authService.currentUser?.email,
+                               !participantEmail.isEmpty,
+                               participantEmail.caseInsensitiveCompare(currentUserEmail) == .orderedSame {
+                                
+                                Text("(current user)")
+                                    .font(.caption)
+                                    .foregroundColor(.green)
+                            }
+                            // --- КОНЕЦ ИЗМЕНЕНИЙ ---
                         }
                         
                         if let email = participant.email, !email.isEmpty {
