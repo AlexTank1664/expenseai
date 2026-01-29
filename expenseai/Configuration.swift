@@ -1,7 +1,9 @@
 import Foundation
 
 struct APIConstants {
-    static let baseURL = "https://sharewithme.club:8443"
+ //   static let baseURL = "https://sharewithme.club:8443"
+    static let baseURL = "https://api.sharewithme.club"
+
     //static let baseURL = "http://127.0.0.1:8000"
     
 
