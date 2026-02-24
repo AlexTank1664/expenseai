@@ -15,6 +15,10 @@ struct APIErrorResponse: Codable {
     }
 }
 
+struct EmailRequest: Codable {
+    let email: String
+}
+
 
 class AuthService: ObservableObject {
     @Published var authToken: String?
@@ -22,6 +26,8 @@ class AuthService: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String? = nil
     @Published var registrationSuccessMessage: String? = nil
+    @Published var passwordResetSuccessMessage: String? = nil
+    @Published var verificationEmailSentMessage: String? = nil
 
     private var cancellables = Set<AnyCancellable>()
     private let keychain = Keychain(service: "a2.expenseai")
@@ -165,6 +171,84 @@ class AuthService: ObservableObject {
                 }
             } receiveValue: { [weak self] response in
                 self?.registrationSuccessMessage = "You has been succesfully registered, \(response.first_name)! Now you can log in"
+            }
+            .store(in: &cancellables)
+    }
+
+    func sendPasswordResetEmail(email: String) {
+        guard let url = buildURL(for: APIConstants.Endpoints.sendPasswordResetEmail) else { return }
+
+        let emailRequest = EmailRequest(email: email)
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        do {
+            request.httpBody = try JSONEncoder().encode(emailRequest)
+        } catch {
+            errorMessage = "Could not encode email data"
+            return
+        }
+
+        isLoading = true
+        passwordResetSuccessMessage = nil
+        errorMessage = nil
+
+        URLSession.shared.dataTaskPublisher(for: request)
+            .tryMap { (data, response) -> Data in
+                guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+                    let errorMessage = self.decodeError(from: data) ?? "An error occurred."
+                    throw AppError(message: errorMessage)
+                }
+                return data
+            }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] completion in
+                self?.isLoading = false
+                if case .failure(let error) = completion {
+                    self?.errorMessage = error.localizedDescription
+                }
+            } receiveValue: { [weak self] data in
+                self?.passwordResetSuccessMessage = "If an account with that email exists, a password reset link has been sent."
+            }
+            .store(in: &cancellables)
+    }
+
+    func resendVerificationEmail(email: String) {
+        guard let url = buildURL(for: APIConstants.Endpoints.resendVerificationEmail) else { return }
+
+        let emailRequest = EmailRequest(email: email)
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        do {
+            request.httpBody = try JSONEncoder().encode(emailRequest)
+        } catch {
+            errorMessage = "Could not encode email data"
+            return
+        }
+
+        isLoading = true
+        verificationEmailSentMessage = nil
+        errorMessage = nil
+
+        URLSession.shared.dataTaskPublisher(for: request)
+            .tryMap { (data, response) -> Data in
+                guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+                    let errorMessage = self.decodeError(from: data) ?? "An error occurred."
+                    throw AppError(message: errorMessage)
+                }
+                return data
+            }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] completion in
+                self?.isLoading = false
+                if case .failure(let error) = completion {
+                    self?.errorMessage = error.localizedDescription
+                }
+            } receiveValue: { [weak self] data in
+                self?.verificationEmailSentMessage = "Verification email has been sent. Please check your inbox."
             }
             .store(in: &cancellables)
     }

@@ -13,6 +13,10 @@ struct APIConstants {
         static let register = "/exp-app/auth/users/"
         static let me = "/exp-app/auth/users/me/"
         
+        // MARK: - Password Reset & Verification
+        static let sendPasswordResetEmail = "/exp-app/auth/send-password-reset-email/"
+        static let resendVerificationEmail = "/exp-app/auth/users/resend_activation/"
+        
         // MARK: - Sync Endpoints
         // Remove the old sync endpoint
         // static let sync = "/exp-app/sync/"

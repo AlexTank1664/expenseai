@@ -9,6 +9,7 @@ struct LoginView: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var opacity: CGFloat = 0.9
     @State private var scale: CGFloat = 0.8
+    @State private var showPasswordResetView = false
     
     var body: some View {
         VStack(spacing: 20) {
@@ -74,6 +75,14 @@ struct LoginView: View {
             }
             .padding(.horizontal)
             
+            if let errorMessage = authService.errorMessage {
+                Text(errorMessage)
+                    .foregroundColor(.red)
+                    .font(.footnote)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+            }
+            
             if authService.isLoading {
                 ProgressView()
                     .padding()
@@ -98,6 +107,16 @@ struct LoginView: View {
             }
             
             Button(action: {
+                authService.errorMessage = nil
+                showPasswordResetView = true
+            }) {
+                Text(localizationManager.localize(key: "Forgot Password?"))
+                    .font(.footnote)
+                    .foregroundColor(.white)
+            }
+            .padding(.top, -10)
+            
+            Button(action: {
                 
                 showLogin = false
             }) {
@@ -113,5 +132,11 @@ struct LoginView: View {
             Spacer()
         }
         .padding()
+        .sheet(isPresented: $showPasswordResetView) {
+            PasswordResetView()
+        }
+        .onAppear {
+            authService.errorMessage = nil
+        }
     }
 }
