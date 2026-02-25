@@ -15,7 +15,7 @@ struct APIConstants {
         
         // MARK: - Password Reset & Verification
         static let sendPasswordResetEmail = "/exp-app/auth/send-password-reset-email/"
-        static let resendVerificationEmail = "/exp-app/auth/users/resend_activation/"
+        static let sendVerificationEmail = "/exp-app/auth/send-verification-email/"
         
         // MARK: - Sync Endpoints
         // Remove the old sync endpoint

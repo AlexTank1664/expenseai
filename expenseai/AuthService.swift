@@ -170,7 +170,8 @@ class AuthService: ObservableObject {
                     self?.errorMessage = error.localizedDescription
                 }
             } receiveValue: { [weak self] response in
-                self?.registrationSuccessMessage = "You has been succesfully registered, \(response.first_name)! Now you can log in"
+                self?.registrationSuccessMessage = "You have been successfully registered, \(response.first_name)! A verification email has been sent to \(email). Please follow the link in the email to activate your account."
+                self?.sendVerificationEmail(email: email)
             }
             .store(in: &cancellables)
     }
@@ -214,8 +215,8 @@ class AuthService: ObservableObject {
             .store(in: &cancellables)
     }
 
-    func resendVerificationEmail(email: String) {
-        guard let url = buildURL(for: APIConstants.Endpoints.resendVerificationEmail) else { return }
+    func sendVerificationEmail(email: String) {
+        guard let url = buildURL(for: APIConstants.Endpoints.sendVerificationEmail) else { return }
 
         let emailRequest = EmailRequest(email: email)
         var request = URLRequest(url: url)
