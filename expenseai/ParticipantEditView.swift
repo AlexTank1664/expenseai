@@ -73,6 +73,7 @@ struct ParticipantEditView: View {
         if isNew {
             participantToSave.id = UUID()
             participantToSave.createdAt = Date()
+            participantToSave.updatedAt = Date()
             participantToSave.createdBy = Int64(userID)
         }
         

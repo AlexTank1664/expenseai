@@ -7,6 +7,12 @@ fileprivate struct ParticipantBalance: Identifiable {
     let balances: [Currency: Double]
 }
 
+fileprivate struct ParticipantSpending: Identifiable {
+    let id: UUID
+    let name: String
+    let totalSpent: [Currency: Double]
+}
+
 fileprivate struct DebtTransaction: Identifiable {
     let id = UUID()
     let fromParticipant: Participant
@@ -20,25 +26,174 @@ fileprivate struct SettlementSheetItem: Identifiable {
     let currency: Currency
 }
 
+fileprivate struct CurrencySpending: Identifiable {
+    let id: String
+    let currency: Currency
+    let total: Double
+    let participants: [ParticipantSpending]
+}
+
+// Структура для хранения баланса участника с группировкой по валютам для отображения
+fileprivate struct ParticipantBalanceWithCurrencies: Identifiable {
+    let id: UUID
+    let name: String
+    let balances: [Currency: Double]
+    let currencies: [CurrencyBalanceItem]
+}
+
+// Структура для отображения валюты в балансе участника
+fileprivate struct CurrencyBalanceItem: Identifiable {
+    let id: String // код валюты
+    let currency: Currency
+    let amount: Double
+    let expenseDetails: [ExpenseDetail] // детали расходов в этой валюте
+}
+
+// Структура для деталей расхода
+fileprivate struct ExpenseDetail: Identifiable {
+    let id = UUID()
+    let description: String
+    let amount: Double
+    let isCredit: Bool // true - оплата, false - доля
+    let date: Date?
+}
+
 struct BalancesView: View {
     @ObservedObject var group: Group
-    @State private var expandedBalanceID: UUID?
+    @State private var expandedParticipantID: UUID?
+    @State private var expandedCurrencyID: String?
+    @State private var expandedSpendingCurrencyCode: String? // Для секции Total spending
     @State private var settlementToEdit: SettlementSheetItem?
     @EnvironmentObject private var localizationManager: LocalizationManager
 
     private var calculatedBalances: ([ParticipantBalance], [Currency: [DebtTransaction]]) {
         calculateBalances(for: group)
     }
+    
+    private var calculatedSpending: [ParticipantSpending] {
+        calculateSpending(for: group)
+    }
+    
+    private var spendingByCurrency: [CurrencySpending] {
+        var currencyMap: [String: (currency: Currency, total: Double, participants: [ParticipantSpending])] = [:]
+        
+        for spending in calculatedSpending {
+            for (currency, amount) in spending.totalSpent {
+                let currencyCode = currency.c_code ?? "Unknown"
+                if currencyMap[currencyCode] == nil {
+                    currencyMap[currencyCode] = (currency: currency, total: 0, participants: [])
+                }
+                currencyMap[currencyCode]?.total += amount
+                currencyMap[currencyCode]?.participants.append(spending)
+            }
+        }
+        
+        return currencyMap.map { (code, data) in
+            CurrencySpending(
+                id: code,
+                currency: data.currency,
+                total: data.total,
+                participants: data.participants.sorted { $0.name < $1.name }
+            )
+        }.sorted { $0.id < $1.id }
+    }
+    
+    // Формирование данных для отображения балансов с группировкой по валютам
+    private var participantsWithCurrencies: [ParticipantBalanceWithCurrencies] {
+        let (participantBalances, _) = calculatedBalances
+        
+        return participantBalances.map { participantBalance in
+            let currencyItems = participantBalance.balances.map { (currency, amount) -> CurrencyBalanceItem in
+                // Собираем детали расходов для этой валюты
+                let expenseDetails = getExpenseDetails(for: participantBalance.id, currency: currency)
+                
+                return CurrencyBalanceItem(
+                    id: currency.c_code ?? "Unknown",
+                    currency: currency,
+                    amount: amount,
+                    expenseDetails: expenseDetails
+                )
+            }.sorted { $0.id < $1.id }
+            
+            return ParticipantBalanceWithCurrencies(
+                id: participantBalance.id,
+                name: participantBalance.name,
+                balances: participantBalance.balances,
+                currencies: currencyItems
+            )
+        }.sorted { $0.name < $1.name }
+    }
+    
+    // Получение деталей расходов для участника в конкретной валюте
+    private func getExpenseDetails(for participantID: UUID, currency: Currency) -> [ExpenseDetail] {
+        var details: [ExpenseDetail] = []
+        
+        // Расходы, где участник оплатил
+        let paidExpenses = group.expensesArray
+            .filter {
+                !$0.is_settlement &&
+                $0.paidBy?.id == participantID &&
+                !$0.isSoftDeleted &&
+                $0.currency?.c_code == currency.c_code
+            }
+            .sorted { $0.createdAt ?? .distantPast > $1.createdAt ?? .distantPast }
+        
+        for expense in paidExpenses {
+            details.append(ExpenseDetail(
+                description: expense.desc ?? localizationManager.localize(key: "No description"),
+                amount: expense.amount,
+                isCredit: true,
+                date: expense.createdAt
+            ))
+        }
+        
+        // Доли участника в расходах
+        let participantShares = group.expensesArray.flatMap { $0.sharesArray }
+            .filter {
+                guard let expense = $0.expense else { return false }
+                return !expense.is_settlement &&
+                       $0.participant?.id == participantID &&
+                       !expense.isSoftDeleted &&
+                       expense.currency?.c_code == currency.c_code
+            }
+            .sorted {
+                ($0.expense?.createdAt ?? .distantPast) > ($1.expense?.createdAt ?? .distantPast)
+            }
+        
+        for share in participantShares {
+            if let expense = share.expense {
+                details.append(ExpenseDetail(
+                    description: expense.desc ?? localizationManager.localize(key: "No description"),
+                    amount: share.amount,
+                    isCredit: false,
+                    date: expense.createdAt
+                ))
+            }
+        }
+        
+        // Сортировка по дате
+        return details.sorted { ($0.date ?? .distantPast) > ($1.date ?? .distantPast) }
+    }
+    
+    // Проверка, есть ли транзакции для settlement по валютам
+    private var hasSettlementTransactions: Bool {
+        let (_, debtTransactionsByCurrency) = calculatedBalances
+        return debtTransactionsByCurrency.values.contains { !$0.isEmpty }
+    }
 
     var body: some View {
-        let (participantBalances, debtTransactionsByCurrency) = calculatedBalances
+        let (_, debtTransactionsByCurrency) = calculatedBalances
         
         List {
-            balancesSection(with: participantBalances)
-            settlementsSection(with: debtTransactionsByCurrency)
+            balancesSection()
+            spendingSection()
+            
+            // Показываем секцию settlements только если есть транзакции
+            if hasSettlementTransactions {
+                settlementsSection(with: debtTransactionsByCurrency)
+            }
         }
         .sheet(item: $settlementToEdit) { item in
-            // Remove the redundant NavigationView wrapper
             SettleUpView(
                 group: group,
                 payer: item.transaction.fromParticipant,
@@ -46,174 +201,205 @@ struct BalancesView: View {
                 amount: item.transaction.amount,
                 currency: item.currency
             )
+            .environmentObject(localizationManager)
         }
     }
 
     @ViewBuilder
-    private func balancesSection(with participantBalances: [ParticipantBalance]) -> some View {
+    private func balancesSection() -> some View {
         Section(header: Text(localizationManager.localize(key: "Total balance"))) {
-            if participantBalances.isEmpty {
+            if participantsWithCurrencies.isEmpty {
                 Text(localizationManager.localize(key: "No data to calculate")).foregroundColor(.gray)
             } else {
-                ForEach(participantBalances) { balance in
-                    VStack(alignment: .leading) {
+                ForEach(participantsWithCurrencies) { participant in
+                    VStack(alignment: .leading, spacing: 4) {
+                        // Заголовок участника
                         HStack {
-                            Text(balance.name)
+                            Text(participant.name)
+                                .font(.headline)
                             Spacer()
-                            balanceView(for: balance)
+                            // Показываем общий баланс участника или несколько валют
+                            if participant.currencies.count == 1 {
+                                if let currencyItem = participant.currencies.first {
+                                    Text(formatAmount(currencyItem.amount, currency: currencyItem.currency, withSign: true))
+                                        .font(.headline)
+                                        .foregroundColor(currencyItem.amount < -0.01 ? .red : (currencyItem.amount > 0.01 ? .green : .primary))
+                                }
+                            } else {
+                                Text("\(participant.currencies.count) \(localizationManager.localize(key: "currencies"))")
+                                    .font(.subheadline)
+                                    .foregroundColor(.orange)
+                            }
                         }
                         .contentShape(Rectangle())
                         .onTapGesture {
                             withAnimation(.spring()) {
-                                if expandedBalanceID == balance.id {
-                                    expandedBalanceID = nil
+                                if expandedParticipantID == participant.id {
+                                    expandedParticipantID = nil
                                 } else {
-                                    expandedBalanceID = balance.id
+                                    expandedParticipantID = participant.id
                                 }
                             }
                         }
                         
-                        if expandedBalanceID == balance.id {
-                            expandedBalanceDetailView(for: balance)
+                        // Раскрывающийся список валют для участника
+                        if expandedParticipantID == participant.id {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Divider().padding(.vertical, 4)
+                                
+                                ForEach(participant.currencies) { currencyItem in
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        // Заголовок валюты - кликабельный
+                                        HStack {
+                                            Text(currencyItem.currency.c_code ?? "Unknown")
+                                                .font(.subheadline)
+                                                .fontWeight(.medium)
+                                            Spacer()
+                                            Text(formatAmount(currencyItem.amount, currency: currencyItem.currency, withSign: true))
+                                                .font(.subheadline)
+                                                .fontWeight(.medium)
+                                                .foregroundColor(currencyItem.amount < -0.01 ? .red : (currencyItem.amount > 0.01 ? .green : .primary))
+                                        }
+                                        .contentShape(Rectangle())
+                                        .onTapGesture {
+                                            withAnimation(.spring()) {
+                                                if expandedCurrencyID == currencyItem.id {
+                                                    expandedCurrencyID = nil
+                                                } else {
+                                                    expandedCurrencyID = currencyItem.id
+                                                }
+                                            }
+                                        }
+                                        
+                                        // Детали расходов по валюте
+                                        if expandedCurrencyID == currencyItem.id && !currencyItem.expenseDetails.isEmpty {
+                                            VStack(alignment: .leading, spacing: 4) {
+                                                Divider().padding(.vertical, 2)
+                                                
+                                                Text(localizationManager.localize(key: "Expenses"))
+                                                    .font(.caption)
+                                                    .foregroundColor(.secondary)
+                                                    .padding(.bottom, 2)
+                                                
+                                                ForEach(currencyItem.expenseDetails) { detail in
+                                                    HStack {
+                                                        Text(detail.description)
+                                                            .font(.caption)
+                                                            .lineLimit(1)
+                                                        Spacer()
+                                                        Text("\(detail.isCredit ? "+" : "-")\(formatAmount(detail.amount, currency: currencyItem.currency))")
+                                                            .font(.caption)
+                                                            .foregroundColor(detail.isCredit ? .green : .red)
+                                                    }
+                                                    .padding(.leading, 8)
+                                                }
+                                            }
+                                            .padding(.top, 4)
+                                            .transition(.opacity.combined(with: .move(edge: .top)))
+                                        }
+                                    }
+                                    .padding(.vertical, 2)
+                                    
+                                    if currencyItem.id != participant.currencies.last?.id {
+                                        Divider().padding(.vertical, 2)
+                                    }
+                                }
+                            }
+                            .padding(.top, 4)
+                            .transition(.opacity.combined(with: .move(edge: .top)))
                         }
                     }
+                    .padding(.vertical, 4)
                 }
             }
+        }
+    }
+    
+    @ViewBuilder
+    private func spendingSection() -> some View {
+        Section {
+            if spendingByCurrency.isEmpty {
+                Text(localizationManager.localize(key: "No data to calculate")).foregroundColor(.gray)
+            } else {
+                ForEach(spendingByCurrency) { currencySpending in
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Text(currencySpending.currency.c_code ?? "Unknown")
+                                .font(.headline)
+                            Spacer()
+                            Text(formatAmount(currencySpending.total, currency: currencySpending.currency))
+                                .font(.headline)
+                                .foregroundColor(.green)
+                        }
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            withAnimation(.spring()) {
+                                if expandedSpendingCurrencyCode == currencySpending.id {
+                                    expandedSpendingCurrencyCode = nil
+                                } else {
+                                    expandedSpendingCurrencyCode = currencySpending.id
+                                }
+                            }
+                        }
+                        
+                        if expandedSpendingCurrencyCode == currencySpending.id {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Divider().padding(.vertical, 4)
+                                
+                                ForEach(currencySpending.participants) { participant in
+                                    HStack {
+                                        Text(participant.name)
+                                            .font(.subheadline)
+                                        Spacer()
+                                        Text(formatAmount(participant.totalSpent[currencySpending.currency] ?? 0, currency: currencySpending.currency))
+                                            .font(.subheadline)
+                                            .foregroundColor(.green)
+                                    }
+                                    .padding(.leading, 8)
+                                    .padding(.vertical, 2)
+                                }
+                            }
+                            .padding(.top, 4)
+                            .transition(.opacity.combined(with: .move(edge: .top)))
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+            }
+        } header: {
+            Text(localizationManager.localize(key: "Total spending"))
         }
     }
     
     @ViewBuilder
     private func settlementsSection(with debtTransactionsByCurrency: [Currency: [DebtTransaction]]) -> some View {
-        if debtTransactionsByCurrency.isEmpty {
-            Section {
-                Text(localizationManager.localize(key: "No transactions needed")).foregroundColor(.gray)
-            }
-        } else {
-            ForEach(debtTransactionsByCurrency.keys.sorted { $0.c_code ?? "" < $1.c_code ?? "" }, id: \.self) { currency in
-                Section(header: Text(localizationManager.localize(key: "How to settle up") + " (\(currency.symbol_native ?? ""))")) {
-                    if let transactions = debtTransactionsByCurrency[currency], !transactions.isEmpty {
-                        ForEach(transactions) { transaction in
-                            Button(action: {
-                                settlementToEdit = SettlementSheetItem(transaction: transaction, currency: currency)
-                            }) {
-                                HStack(spacing: 4) {
-                                    Text(transaction.fromParticipant.name ?? "Unknown")
-                                    Image(systemName: "arrow.right")
-                                    Text(transaction.toParticipant.name ?? "Unknown")
-                                    Spacer()
-                                    Text(formatAmount(transaction.amount, currency: currency))
-                                }
-                                .foregroundColor(.primary)
+        // Фильтруем только валюты, у которых есть транзакции
+        let currenciesWithTransactions = debtTransactionsByCurrency.filter { !$0.value.isEmpty }
+        
+        ForEach(currenciesWithTransactions.keys.sorted { $0.c_code ?? "" < $1.c_code ?? "" }, id: \.self) { currency in
+            Section(header: Text(localizationManager.localize(key: "How to settle up") + " (\(currency.symbol_native ?? ""))")) {
+                if let transactions = debtTransactionsByCurrency[currency], !transactions.isEmpty {
+                    ForEach(transactions) { transaction in
+                        Button(action: {
+                            settlementToEdit = SettlementSheetItem(transaction: transaction, currency: currency)
+                        }) {
+                            HStack(spacing: 4) {
+                                Text(transaction.fromParticipant.name ?? "Unknown")
+                                Image(systemName: "arrow.right")
+                                Text(transaction.toParticipant.name ?? "Unknown")
+                                Spacer()
+                                Text(formatAmount(transaction.amount, currency: currency))
                             }
+                            .foregroundColor(.primary)
                         }
-                    } else {
-                        Text(localizationManager.localize(key: "Everything is settled")).foregroundColor(.gray)
                     }
                 }
             }
         }
     }
     
-    @ViewBuilder
-    private func expandedBalanceDetailView(for balance: ParticipantBalance) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Divider().padding(.vertical, 4)
-
-            // Expenses section
-            let paidExpenses = group.expensesArray
-                .filter { !$0.is_settlement && $0.paidBy?.id == balance.id && !$0.isSoftDeleted }
-                .sorted { $0.createdAt ?? .distantPast > $1.createdAt ?? .distantPast }
-
-            // --- Логика для затрат, в которых этот участник ДОЛЖЕН ---
-            
-            // Шаг 1: Получаем и фильтруем все доли
-            let allParticipantShares = group.expensesArray.flatMap { $0.sharesArray }
-                .filter {
-                    // РЕКОМЕНДАЦИЯ: Заменил опасное извлечение '!' на безопасное 'guard'
-                    guard let expense = $0.expense else { return false }
-                    //return !expense.is_settlement && $0.participant?.id == balance.id && expense.paidBy?.id != balance.id && !expense.isSoftDeleted
-                    return !expense.is_settlement && $0.participant?.id == balance.id && !expense.isSoftDeleted
-                }
-            
-            // Шаг 2: Сортируем отфильтрованный массив
-            let participantShares = allParticipantShares.sorted {
-                // ИСПРАВЛЕНИЕ: Используем '?' для безопасного доступа к 'createdAt'
-                ($0.expense?.createdAt ?? .distantPast) > ($1.expense?.createdAt ?? .distantPast)
-            }
-
-            // Если есть какие-либо транзакции для этого участника, показываем секцию
-            if !paidExpenses.isEmpty || !participantShares.isEmpty {
-                Text(localizationManager.localize(key: "Expenses"))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .padding(.bottom, -4)
-                
-                ForEach(paidExpenses) { expense in
-                    detailRow(description: expense.desc ?? localizationManager.localize(key: "No description"), amount: expense.amount, currency: expense.currency, isCredit: true)
-                }
-                
-                ForEach(participantShares, id: \.id) { share in
-                    detailRow(description: share.expense?.desc ?? localizationManager.localize(key: "No description"), amount: share.amount, currency: share.expense?.currency, isCredit: false)
-                }
-            }
-
-            // Settlements section
-            let settlementsPaid = group.expensesArray.filter { $0.is_settlement && $0.paidBy?.id == balance.id && !$0.isSoftDeleted }
-            let settlementsReceived = group.expensesArray.filter { expense in expense.is_settlement && expense.sharesArray.contains(where: { ($0.participant)?.id == balance.id }) && !expense.isSoftDeleted }
-            
-            if !settlementsPaid.isEmpty || !settlementsReceived.isEmpty {
-                if !paidExpenses.isEmpty || !participantShares.isEmpty {
-                    Divider().padding(.vertical, 4)
-                }
-                Text(localizationManager.localize(key: "Debt repayment"))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .padding(.bottom, -4)
-                
-                ForEach(settlementsReceived) { expense in
-                    detailRow(description: expense.desc ?? localizationManager.localize(key: "Settlement"), amount: expense.amount, currency: expense.currency, isCredit: true)
-                }
-                
-                ForEach(settlementsPaid) { expense in
-                    detailRow(description: expense.desc ?? localizationManager.localize(key: "Settlement"), amount: expense.amount, currency: expense.currency, isCredit: false)
-                }
-            }
-        }
-        .padding(.top, 4)
-        .transition(.opacity.combined(with: .move(edge: .top)))
-    }
-
-    @ViewBuilder
-    private func detailRow(description: String, amount: Double, currency: Currency?, isCredit: Bool) -> some View {
-        HStack {
-            Text(description)
-                .lineLimit(1)
-            Spacer()
-            Text("\(isCredit ? "+" : "-")\(formatAmount(amount, currency: currency))")
-                .foregroundColor(isCredit ? .green : .red)
-        }
-        .font(.footnote)
-        .padding(.leading)
-    }
-
-    @ViewBuilder
-    private func balanceView(for balance: ParticipantBalance) -> some View {
-        if balance.balances.count > 1 {
-            Text(localizationManager.localize(key: "Multiple currencies"))
-                .font(.footnote)
-                .foregroundColor(.orange)
-        } else if let (currency, amount) = balance.balances.first {
-            Text(formatAmount(amount, currency: currency, withSign: true))
-                .foregroundColor(amount < -0.01 ? .red : (amount > 0.01 ? .green : .primary))
-        } else {
-            Text(formatAmount(0, currency: group.defaultCurrency, withSign: true))
-                .foregroundColor(.primary)
-        }
-    }
-    
     private func formatAmount(_ amount: Double, currency: Currency?, withSign: Bool = false) -> String {
         let symbol = currency?.symbol_native ?? ""
-        
         let digits = Int(currency?.decimal_digits ?? 2)
         let format: String
         
@@ -224,7 +410,6 @@ struct BalancesView: View {
         }
         
         let amountString = String(format: format, amount)
-        
         return "\(amountString) \(symbol)"
     }
     
@@ -300,5 +485,43 @@ struct BalancesView: View {
         }
         
         return (participantBalancesForDisplay, transactionsByCurrency)
+    }
+    
+    private func calculateSpending(for group: Group) -> [ParticipantSpending] {
+        var spendingByParticipant: [Participant: [Currency: Double]] = [:]
+        
+        for member in group.membersArray {
+            spendingByParticipant[member] = [:]
+        }
+        
+        for expense in group.expensesArray.filter({ !$0.isSoftDeleted && !$0.is_settlement }) {
+            guard let currency = expense.currency else { continue }
+            
+            if let payer = expense.paidBy {
+                if spendingByParticipant[payer]?[currency] == nil {
+                    spendingByParticipant[payer]?[currency] = 0
+                }
+                spendingByParticipant[payer]?[currency]? += expense.amount
+            }
+        }
+        
+        let result = group.membersArray.map { participant in
+            let currencyData = spendingByParticipant[participant] ?? [:]
+            var totalSpent: [Currency: Double] = [:]
+            
+            for (currency, spent) in currencyData {
+                if spent > 0.01 {
+                    totalSpent[currency] = spent
+                }
+            }
+            
+            return ParticipantSpending(
+                id: participant.id!,
+                name: participant.name ?? localizationManager.localize(key: "Unknown"),
+                totalSpent: totalSpent
+            )
+        }.sorted { $0.name < $1.name }
+        
+        return result
     }
 }

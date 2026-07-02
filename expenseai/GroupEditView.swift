@@ -174,6 +174,7 @@ struct GroupEditView: View {
         if isNew {
             groupToSave.id = UUID()
             groupToSave.createdAt = Date()
+            groupToSave.updatedAt = Date()
             groupToSave.createdBy = Int64(userID)
         }
         

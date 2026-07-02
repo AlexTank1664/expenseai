@@ -2,149 +2,262 @@ import SwiftUI
 import CoreData
 
 struct SettleUpView: View {
+    @ObservedObject var group: Group
+    let payer: Participant?
+    let payee: Participant?
+    let amount: Double
+    let currency: Currency?
+    
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject var authService: AuthService
     @EnvironmentObject private var localizationManager: LocalizationManager
     
-    let group: Group
-    let initialPayer: Participant?
-    let initialPayee: Participant?
-    let initialAmount: Double
-    let initialCurrency: Currency?
-
-    @State private var payer: Participant?
-    @State private var payee: Participant?
-    @State private var amount: Double = 0.0
-    @State private var currency: Currency?
-
+    // FetchRequest для получения всех активных валют
     @FetchRequest(
         entity: Currency.entity(),
         sortDescriptors: [NSSortDescriptor(keyPath: \Currency.currency_name, ascending: true)],
         predicate: NSPredicate(format: "is_active == YES")
     ) var currencies: FetchedResults<Currency>
     
-    private var isFormValid: Bool {
-        amount > 0 && payer != nil && payee != nil && payer != payee && currency != nil
+    @State private var settlementAmount: String = ""
+    @State private var settlementDate: Date = Date()
+    @State private var settlementDescription: String = ""
+    @State private var selectedPayer: Participant?
+    @State private var selectedPayee: Participant?
+    @State private var selectedCurrency: Currency?
+    
+    // Проверяем, вызван ли View из балансов (с предзаполненными данными)
+    private var isFromBalances: Bool {
+        return payer != nil && payee != nil && amount > 0
     }
-
-    init(group: Group, payer: Participant?, payee: Participant?, amount: Double, currency: Currency?) {
-        self.group = group
-        self.initialPayer = payer
-        self.initialPayee = payee
-        self.initialAmount = amount
-        self.initialCurrency = currency
+    
+    private var participants: [Participant] {
+        group.membersArray.sorted { $0.name ?? "" < $1.name ?? "" }
     }
-
+    
+    // Получаем доступные валюты для выбора
+    private var availableCurrencies: [Currency] {
+        var available = Array(currencies)
+        
+        // Если есть переданная валюта, но она не в списке активных - добавляем её
+        if let currency = currency, !available.contains(where: { $0.id == currency.id }) {
+            available.insert(currency, at: 0)
+        }
+        
+        return available
+    }
+    
     var body: some View {
-        // Return the NavigationView to provide a context for the toolbar
         NavigationView {
             Form {
-                Section(header: Text(localizationManager.localize(key: "Settlement details"))) {
-                    Picker(localizationManager.localize(key: "Paid by"), selection: $payer) {
-                        Text(localizationManager.localize(key: "Not selected")).tag(nil as Participant?)
-                        ForEach(group.membersArray, id: \.self) { participant in
-                            Text(participant.name ?? "Unknown").tag(participant as Participant?)
+                Section(header: Text(localizationManager.localize(key: "Settlement Details"))) {
+                    // Выбор плательщика
+                    if isFromBalances {
+                        // Из балансов - показываем фиксированного плательщика
+                        HStack {
+                            Text(localizationManager.localize(key: "From"))
+                            Spacer()
+                            Text(payer?.name ?? "Unknown")
+                                .foregroundColor(.secondary)
+                        }
+                    } else {
+                        // Из кнопки - показываем Picker для выбора
+                        Picker(localizationManager.localize(key: "From"), selection: $selectedPayer) {
+                            Text(localizationManager.localize(key: "Select payer")).tag(nil as Participant?)
+                            ForEach(participants, id: \.id) { participant in
+                                Text(participant.name ?? "Unknown").tag(participant as Participant?)
+                            }
+                        }
+                        .onChange(of: selectedPayer) { oldValue, newValue in
+                            updateDescription()
                         }
                     }
                     
-                    Picker(localizationManager.localize(key: "Payee"), selection: $payee) {
-                        Text(localizationManager.localize(key: "Not selected")).tag(nil as Participant?)
-                        ForEach(group.membersArray, id: \.self) { participant in
-                            if participant != payer {
+                    // Выбор получателя
+                    if isFromBalances {
+                        // Из балансов - показываем фиксированного получателя
+                        HStack {
+                            Text(localizationManager.localize(key: "To"))
+                            Spacer()
+                            Text(payee?.name ?? "Unknown")
+                                .foregroundColor(.secondary)
+                        }
+                    } else {
+                        // Из кнопки - показываем Picker для выбора
+                        Picker(localizationManager.localize(key: "To"), selection: $selectedPayee) {
+                            Text(localizationManager.localize(key: "Select payee")).tag(nil as Participant?)
+                            ForEach(participants, id: \.id) { participant in
                                 Text(participant.name ?? "Unknown").tag(participant as Participant?)
+                            }
+                        }
+                        .onChange(of: selectedPayee) { oldValue, newValue in
+                            updateDescription()
+                        }
+                    }
+                    
+                    // Поле суммы
+                    HStack {
+                        Text(localizationManager.localize(key: "Amount"))
+                        Spacer()
+                        TextField("0.00", text: $settlementAmount)
+                            .keyboardType(.decimalPad)
+                            .multilineTextAlignment(.trailing)
+                    }
+                    
+                    // Выбор валюты
+                    if isFromBalances {
+                        // Из балансов - показываем фиксированную валюту
+                        HStack {
+                            Text(localizationManager.localize(key: "Currency"))
+                            Spacer()
+                            Text(currency?.symbol_native ?? currency?.c_code ?? "Unknown")
+                                .foregroundColor(.secondary)
+                            Text(currency?.c_code ?? "")
+                                .foregroundColor(.secondary)
+                                .font(.caption)
+                        }
+                    } else {
+                        // Из кнопки - показываем Picker для выбора валюты
+                        if !availableCurrencies.isEmpty {
+                            Picker(localizationManager.localize(key: "Currency"), selection: $selectedCurrency) {
+                                ForEach(availableCurrencies, id: \.self) { currency in
+                                    Text("\(currency.symbol_native ?? currency.c_code ?? "Unknown")")
+                                        .tag(currency as Currency?)
+                                }
+                            }
+                            .onChange(of: selectedCurrency) { oldValue, newValue in
+                                updateDescription()
+                            }
+                        } else {
+                            HStack {
+                                Text(localizationManager.localize(key: "Currency"))
+                                Spacer()
+                                Text(localizationManager.localize(key: "No currencies available"))
+                                    .foregroundColor(.gray)
                             }
                         }
                     }
                     
-                    HStack {
-                        TextField(localizationManager.localize(key: "Amount"), value: $amount, format: .number.precision(.fractionLength(Int(currency?.decimal_digits ?? 2))))
-                        #if os(iOS)
-                            .keyboardType(.decimalPad)
-                        #endif
-                        Text(currency?.symbol_native ?? "")
-                            .foregroundColor(.gray)
-                    }
+                    DatePicker(localizationManager.localize(key: "Date"), selection: $settlementDate, displayedComponents: .date)
                     
-                    Picker(localizationManager.localize(key: "Currency"), selection: $currency) {
-                        Text(localizationManager.localize(key: "Not selected")).tag(nil as Currency?)
-                        ForEach(currencies, id: \.self) { c in
-                            Text("\(c.currency_name ?? "") (\(c.symbol_native ?? ""))").tag(c as Currency?)
-                        }
+                    HStack {
+                        Text(localizationManager.localize(key: "Description"))
+                        Spacer()
+                        TextField(localizationManager.localize(key: "Settlement"), text: $settlementDescription)
+                            .multilineTextAlignment(.trailing)
                     }
                 }
                 
-                // This clear section will act as a Spacer inside the Form
                 Section {
-                    Color.clear
+                    Button(action: saveSettlement) {
+                        Text(localizationManager.localize(key: "Create Settlement"))
+                            .frame(maxWidth: .infinity)
+                            .foregroundColor(.white)
+                    }
+                    .listRowBackground(Color.blue)
+                    .disabled(!isFormValid())
                 }
-                .listRowBackground(Color.clear)
             }
-            .onAppear(perform: setupInitialState)
-            .navigationTitle(localizationManager.localize(key: "Debt repayment"))
-            #if os(iOS)
+            .navigationTitle(localizationManager.localize(key: "Settle Up"))
             .navigationBarTitleDisplayMode(.inline)
-            #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(localizationManager.localize(key: "Cancel")) { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(localizationManager.localize(key: "Save")) {
-                        savePayment()
+                    Button(localizationManager.localize(key: "Cancel")) {
                         dismiss()
                     }
-                    .disabled(!isFormValid)
                 }
+            }
+            .onAppear {
+                setupInitialValues()
             }
         }
     }
     
-    private func setupInitialState() {
-        payer = initialPayer
-        payee = initialPayee
-        amount = initialAmount
-        
-        if let initialCurrency = initialCurrency {
-            currency = initialCurrency
+    private func setupInitialValues() {
+        // Устанавливаем участников
+        if isFromBalances {
+            // Из балансов - используем переданных
+            selectedPayer = payer
+            selectedPayee = payee
+            selectedCurrency = currency
+            settlementAmount = String(format: "%.2f", amount)
         } else {
-            currency = group.defaultCurrency
+            // Из кнопки - выбираем первую валюту по умолчанию
+            if selectedCurrency == nil, let firstCurrency = availableCurrencies.first {
+                selectedCurrency = firstCurrency
+            }
         }
+        
+        // Устанавливаем описание по умолчанию
+        updateDescription()
     }
     
-    private func savePayment() {
-        guard let payer = payer,
-              let payee = payee,
-              let currency = currency,
-              let userID = authService.currentUser?.id,
-              amount > 0 else { return }
-
-        let newPayment = Expense(context: viewContext)
-        newPayment.id = UUID()
-        newPayment.is_settlement = true
-        newPayment.amount = amount
-        newPayment.desc = "\(payer.name ?? "") → \(payee.name ?? "")"
+    private func updateDescription() {
+        let payerName: String
+        let payeeName: String
         
-        // --- Audit Fields ---
-        let now = Date()
-        newPayment.createdAt = now // CORRECTED from .date
-        newPayment.createdBy = Int64(userID)
-        newPayment.updatedAt = now
-        newPayment.updatedBy = Int64(userID)
-        // --------------------
+        if isFromBalances {
+            payerName = payer?.name ?? "Unknown"
+            payeeName = payee?.name ?? "Unknown"
+        } else {
+            payerName = selectedPayer?.name ?? "Unknown"
+            payeeName = selectedPayee?.name ?? "Unknown"
+        }
         
-        newPayment.needsSync = true
-        newPayment.group = group
-        newPayment.currency = currency
-        newPayment.paidBy = payer
+        settlementDescription = "\(localizationManager.localize(key: "Settlement")): \(payerName) → \(payeeName)"
+    }
+    
+    private func isFormValid() -> Bool {
+        let finalPayer = isFromBalances ? payer : selectedPayer
+        let finalPayee = isFromBalances ? payee : selectedPayee
+        let finalCurrency = isFromBalances ? currency : selectedCurrency
+        
+        guard finalPayer != nil,
+              finalPayee != nil,
+              finalCurrency != nil,
+              let amountValue = Double(settlementAmount),
+              amountValue > 0 else {
+            return false
+        }
+        return true
+    }
+    
+    private func saveSettlement() {
+        let finalPayer = isFromBalances ? payer : selectedPayer
+        let finalPayee = isFromBalances ? payee : selectedPayee
+        let finalCurrency = isFromBalances ? currency : selectedCurrency
+        
+        guard let payer = finalPayer,
+              let payee = finalPayee,
+              let currency = finalCurrency,
+              let amountValue = Double(settlementAmount),
+              amountValue > 0 else { return }
+        
+        let expense = Expense(context: viewContext)
+        expense.id = UUID()
+        expense.desc = settlementDescription.isEmpty ? localizationManager.localize(key: "Settlement") : settlementDescription
+        expense.amount = amountValue
+        expense.currency = currency
+        expense.is_settlement = true
+        expense.isSoftDeleted = false
+        expense.createdAt = settlementDate
+        expense.updatedAt = Date()
+        expense.paidBy = payer
         
         let share = ExpenseShare(context: viewContext)
         share.id = UUID()
+        share.amount = amountValue
         share.participant = payee
-        share.amount = amount
+        share.expense = expense
         
-        newPayment.addToShares(share)
+        expense.group = group
         
-        try? viewContext.save()
+        do {
+            try viewContext.save()
+            dismiss()
+        } catch {
+            print("Error saving settlement: \(error)")
+            viewContext.rollback()
+        }
     }
 }

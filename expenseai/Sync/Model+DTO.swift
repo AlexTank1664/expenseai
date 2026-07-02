@@ -20,17 +20,27 @@ extension Participant: DTOConvertible {
     }
     
     func toDTO() -> DTO? {
-        guard let id = self.id, let updatedAt = self.updatedAt else {
-            print("⚠️ Skipping Participant with missing id or updatedAt.")
+        guard let id = self.id else {
+            print("⚠️ Skipping Participant with missing id.")
             return nil
         }
+        
+        // Если updatedAt отсутствует, используем текущее время
+        let updatedAtValue: Date
+        if let existingUpdatedAt = self.updatedAt {
+            updatedAtValue = existingUpdatedAt
+        } else {
+            updatedAtValue = Date()
+            print("ℹ️ Participant \(id) had no updatedAt, set to current time")
+        }
+        
         return DTO(
             id: id,
             name: self.name ?? "",
             email: self.email,
             phone: self.phone,
             isSoftDeleted: self.isSoftDeleted,
-            updatedAt: updatedAt,
+            updatedAt: updatedAtValue,
             clientId: nil // We never send this field to the server, so it's always nil here.
         )
     }

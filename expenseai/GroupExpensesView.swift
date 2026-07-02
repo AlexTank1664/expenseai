@@ -159,7 +159,16 @@ fileprivate struct GroupExpensesModals: ViewModifier {
             }
             .sheet(isPresented: $showingAddExpense) { ExpenseEditView(group: group) }
             .sheet(isPresented: $showingEditGroup) { GroupEditView(group: group) }
-            .sheet(isPresented: $showingSettleUp) { SettleUpView(group: group, payer: nil, payee: nil, amount: 0, currency: group.defaultCurrency) }
+            .sheet(isPresented: $showingSettleUp) {
+                SettleUpView(
+                    group: group,
+                    payer: nil,
+                    payee: nil,
+                    amount: 0,
+                    currency: nil
+                )
+                .environmentObject(localizationManager)
+            }
             .alert(localizationManager.localize(key: "Delete settlement?"), isPresented: .constant(settlementToDelete != nil), presenting: settlementToDelete) { expense in
                 Button(localizationManager.localize(key: "Delete"), role: .destructive) {
                     deleteAction(expense)

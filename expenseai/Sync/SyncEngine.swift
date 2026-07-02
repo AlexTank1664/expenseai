@@ -14,12 +14,11 @@ extension Expense: Syncable { static var endpoint: String = APIConstants.Endpoin
 // Currency is not syncable in the same way (push/pull), it's pull-only.
 // We handle it as a special case in the sync coordinator.
 
-@MainActor
 final class SyncEngine: ObservableObject {
     
     // MARK: - Published Properties for UI
-    @Published var isSyncing: Bool = false
-    @Published var syncProgressMessage: String = ""
+    @Published private(set) var isSyncing: Bool = false
+    @Published private(set) var syncProgressMessage: String = ""
 
     // MARK: - Private Properties
     private let context: NSManagedObjectContext
@@ -40,6 +39,20 @@ final class SyncEngine: ObservableObject {
         self.authService = authService
     }
     
+    // MARK: - UI Update Helper
+    
+    /// Обновляет UI-свойства в главном потоке
+    private func updateUI(isSyncing: Bool? = nil, message: String? = nil) {
+        Task { @MainActor in
+            if let isSyncing = isSyncing {
+                self.isSyncing = isSyncing
+            }
+            if let message = message {
+                self.syncProgressMessage = message
+            }
+        }
+    }
+    
     // MARK: - Main Sync Coordinator
     
     func sync() async throws {
@@ -52,29 +65,28 @@ final class SyncEngine: ObservableObject {
             throw SyncError.notAuthenticated
         }
         
-        isSyncing = true
+        updateUI(isSyncing: true)
         defer {
-            isSyncing = false
-            syncProgressMessage = ""
+            updateUI(isSyncing: false, message: "")
         }
         
         print("🚀 --- Starting Full Sync --- 🚀")
         
         // --- Шаг 1: Загрузка справочников (только PULL) ---
-        syncProgressMessage = "Updating currencies..."
+        updateUI(message: "Updating currencies...")
         try await pullAndApply(Currency.self, authToken: token)
 
         // --- Шаг 2: Синхронизация основных данных (PUSH, затем PULL) ---
         // Порядок важен для соблюдения зависимостей:
         // Участники -> Группы -> Затраты
         
-        syncProgressMessage = "Updating participants..."
+        updateUI(message: "Updating participants...")
         try await syncEntity(Participant.self, authToken: token)
         
-        syncProgressMessage = "Updating groups..."
+        updateUI(message: "Updating groups...")
         try await syncEntity(Group.self, authToken: token)
         
-        syncProgressMessage = "Updating expenses..."
+        updateUI(message: "Updating expenses...")
         try await syncEntity(Expense.self, authToken: token)
 
         // --- Шаг 3: Сохранение времени успешной синхронизации ---
@@ -193,11 +205,6 @@ final class SyncEngine: ObservableObject {
     }
     
     // MARK: - Reconciliation (Applying Server Changes)
-    
-    // Здесь должна быть ваша логика применения изменений (applyChanges),
-    // адаптированная для работы с дженериками, если это возможно,
-    // или вызывающая специфичные методы (applyParticipantChanges и т.д.).
-    // Для простоты, я пока оставлю вызовы ваших существующих методов.
     
     private func applyChanges(for dtos: [any Codable], entityType: NSManagedObject.Type, in context: NSManagedObjectContext) async throws {
         try await context.perform {
