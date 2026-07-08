@@ -14,22 +14,16 @@ struct GroupEditView: View {
     @State private var selectedParticipants: Set<Participant> = []
     
     @State private var showingValidationAlert = false
+    @State private var isInitialized = false
 
     private var pickerCurrencies: [Currency] {
-        // Начинаем с массива активных валют
         var availableCurrencies = Array(currencies)
-
-        // Проверяем, есть ли у группы сохраненная валюта
-        // и не содержится ли она уже в списке активных
         if let groupCurrency = group?.defaultCurrency, !availableCurrencies.contains(groupCurrency) {
-            // Если ее нет, добавляем ее в начало списка
             availableCurrencies.insert(groupCurrency, at: 0)
         }
-
         return availableCurrencies
     }
 
-    
     private var isNew: Bool {
         group == nil
     }
@@ -38,11 +32,36 @@ struct GroupEditView: View {
         isNew ? localizationManager.localize(key: "New group") : localizationManager.localize(key: "Edit group")
     }
 
-    // --- Fetched data for pickers ---
     @FetchRequest(
         entity: Participant.entity(),
-        sortDescriptors: [NSSortDescriptor(keyPath: \Participant.name, ascending: true)]
-    ) var participants: FetchedResults<Participant>
+        sortDescriptors: [NSSortDescriptor(keyPath: \Participant.name, ascending: true)],
+        predicate: NSPredicate(format: "isSoftDeleted == NO")
+    ) var activeParticipants: FetchedResults<Participant>
+    
+    // --- ИЗМЕНЕНО: Используем first_name и last_name ---
+    private var currentUserParticipant: Participant? {
+        guard let currentUser = authService.currentUser else { return nil }
+        return activeParticipants.first { participant in
+            guard let participantEmail = participant.email else { return false }
+            return participantEmail.caseInsensitiveCompare(currentUser.email) == .orderedSame
+        }
+    }
+    
+    private var displayParticipants: [Participant] {
+        var result = Set(activeParticipants)
+        
+        for participant in selectedParticipants {
+            if participant.isSoftDeleted {
+                result.insert(participant)
+            }
+        }
+        
+        return result.sorted {
+            let name1 = $0.name ?? ""
+            let name2 = $1.name ?? ""
+            return name1 < name2
+        }
+    }
     
     @FetchRequest(
         entity: Currency.entity(),
@@ -50,10 +69,8 @@ struct GroupEditView: View {
         predicate: NSPredicate(format: "is_active == YES")
     ) var currencies: FetchedResults<Currency>
     
-    // --- Initializer ---
     init(group: Group? = nil) {
         self.group = group
-        // Initialize state based on whether we are editing or creating
         _name = State(initialValue: group?.name ?? "")
         _selectedCurrency = State(initialValue: group?.defaultCurrency)
         _selectedParticipants = State(initialValue: group?.members as? Set<Participant> ?? [])
@@ -73,32 +90,53 @@ struct GroupEditView: View {
                 }
                 
                 Section {
-                    if participants.isEmpty {
-                        Text(localizationManager.localize(key: "Choose participants"))
+                    let availableParticipants = displayParticipants
+                    
+                    if availableParticipants.isEmpty {
+                        Text(localizationManager.localize(key: "No available participants"))
                             .foregroundColor(.gray)
                     } else {
-                        ForEach(participants, id: \.id) { participant in
+                        ForEach(availableParticipants, id: \.id) { participant in
+                            let isCurrentUser = isParticipantCurrentUser(participant)
+                            let isSelected = selectedParticipants.contains(participant)
+                            let isDisabled = participant.isSoftDeleted || isCurrentUser
+                            
                             Button(action: {
-                                if selectedParticipants.contains(participant) {
+                                guard !isCurrentUser else { return }
+                                
+                                if isSelected {
                                     selectedParticipants.remove(participant)
                                 } else {
                                     selectedParticipants.insert(participant)
                                 }
                             }) {
                                 HStack {
-                                    Text(participant.name ?? "Unknown")
+                                    // --- ИЗМЕНЕНО: Отображение имени ---
                                     if participant.isSoftDeleted {
+                                        Text(participant.name ?? "Unknown")
+                                            .foregroundColor(.gray)
                                         Text("(deleted)")
                                             .font(.caption2)
                                             .foregroundColor(.gray)
+                                    } else if isCurrentUser {
+                                        Text(participant.name ?? "Unknown")
+                                        Text("(current user)")
+                                            .font(.caption)
+                                            .foregroundColor(.green)
+                                    } else {
+                                        Text(participant.name ?? "Unknown")
                                     }
+                                    
                                     Spacer()
-                                    if selectedParticipants.contains(participant) {
+                                    
+                                    if isSelected {
                                         Image(systemName: "checkmark")
+                                            .foregroundColor(isDisabled ? .gray : .accentColor)
                                     }
                                 }
                             }
-                            .foregroundColor(.primary)
+                            .foregroundColor(participant.isSoftDeleted ? .gray : .primary)
+                            .disabled(isDisabled)
                         }
                     }
                 } header: {
@@ -106,17 +144,11 @@ struct GroupEditView: View {
                         Text(localizationManager.localize(key: "Participants"))
                         Spacer()
                         NavigationLink(destination: ParticipantsListView()) {
-                            HStack(spacing: 4) {
-
-//                                Text(localizationManager.localize(key: "Manage"))
-//                                    .font(.subheadline)
-                                Image(systemName: "person.2.badge.plus")
-                            }
-                            .foregroundColor(.accentColor)
+                            Image(systemName: "person.2.badge.plus")
+                                .foregroundColor(.accentColor)
                         }
                     }
                 }
-                // -------------------------------------
             }
             .navigationTitle(navigationTitle)
             .toolbar {
@@ -135,6 +167,7 @@ struct GroupEditView: View {
                 if isNew && selectedCurrency == nil {
                     selectedCurrency = currencies.first
                 }
+                initializeCurrentUserParticipant()
             }
             .alert(localizationManager.localize(key: "Incomplete data"), isPresented: $showingValidationAlert) {
                 Button("OK", role: .cancel) { }
@@ -144,24 +177,69 @@ struct GroupEditView: View {
         }
     }
     
-    // --- НАЧАЛО ИЗМЕНЕНИЙ 4: Новая функция для валидации ---
+    // --- ИЗМЕНЕНО: Проверка по email ---
+    private func isParticipantCurrentUser(_ participant: Participant) -> Bool {
+        guard let participantEmail = participant.email,
+              let currentUserEmail = authService.currentUser?.email,
+              !participantEmail.isEmpty else {
+            return false
+        }
+        return participantEmail.caseInsensitiveCompare(currentUserEmail) == .orderedSame
+    }
+    
+    // --- ИЗМЕНЕНО: Создание участника с first_name и last_name ---
+    private func createCurrentUserParticipant() {
+        guard let currentUser = authService.currentUser else { return }
+        
+        let newParticipant = Participant(context: viewContext)
+        newParticipant.id = UUID()
+        
+        // Объединяем first_name и last_name в name
+        let fullName = [currentUser.first_name, currentUser.last_name]
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+        newParticipant.name = fullName.isEmpty ? currentUser.email : fullName
+        
+        newParticipant.email = currentUser.email
+        newParticipant.isSoftDeleted = false
+        newParticipant.needsSync = true
+        
+        do {
+            try viewContext.save()
+            // После сохранения добавляем в выбранные
+            if let createdParticipant = currentUserParticipant {
+                selectedParticipants.insert(createdParticipant)
+                isInitialized = true
+            }
+        } catch {
+            print("Failed to create participant: \(error)")
+        }
+    }
+    
+    private func initializeCurrentUserParticipant() {
+        guard isNew, !isInitialized else { return }
+        
+        if let currentParticipant = currentUserParticipant {
+            selectedParticipants.insert(currentParticipant)
+            isInitialized = true
+        } else {
+            // Если участник не найден, создаем его
+            createCurrentUserParticipant()
+        }
+    }
+    
     private func validateAndSave() {
-        // Проверяем, что имя не пустое (после удаления пробелов),
-        // валюта выбрана и есть хотя бы один участник.
         let isNameValid = !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         let isCurrencyValid = selectedCurrency != nil
         let areParticipantsValid = !selectedParticipants.isEmpty
 
         if isNameValid && isCurrencyValid && areParticipantsValid {
-            // Если все в порядке - сохраняем и закрываем
             save()
             dismiss()
         } else {
-            // Если есть ошибки - показываем алерт
             showingValidationAlert = true
         }
     }
-    // --- КОНЕЦ ИЗМЕНЕНИЙ 4 ---
     
     private func save() {
         guard let userID = authService.currentUser?.id else {
@@ -169,10 +247,8 @@ struct GroupEditView: View {
             return
         }
         
-        // Use the existing group or create a new one
         let groupToSave = group ?? Group(context: viewContext)
         
-        // If it's a new group, set its ID and creation audit fields
         if isNew {
             groupToSave.id = UUID()
             groupToSave.createdAt = Date()
@@ -180,20 +256,14 @@ struct GroupEditView: View {
             groupToSave.createdBy = Int64(userID)
         }
         
-        // Update properties from local state
         groupToSave.name = name
         groupToSave.defaultCurrency = selectedCurrency
         groupToSave.members = selectedParticipants as NSSet
         
-        // --- НАЧАЛО ИЗМЕНЕНИЙ ---
-        // Теперь мы помечаем всех участников этой группы для синхронизации.
-        // Это гарантирует, что они будут отправлены на сервер вместе с группой.
         for participant in selectedParticipants {
             participant.needsSync = true
         }
-        // --- КОНЕЦ ИЗМЕНЕНИЙ ---
         
-        // Always update the modification audit fields
         groupToSave.updatedAt = Date()
         groupToSave.updatedBy = Int64(userID)
         groupToSave.needsSync = true

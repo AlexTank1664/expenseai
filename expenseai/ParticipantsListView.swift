@@ -37,52 +37,59 @@ struct ParticipantsListView: View {
     var body: some View {
         List {
             ForEach(participants, id: \.id) { participant in
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        HStack {
+                HStack(spacing: 12) {
+                    // --- АВАТАР (как в WhatsApp) ---
+                    avatarView(for: participant)
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack(spacing: 6) {
                             Text(participant.name ?? "Unknown")
                                 .font(.headline)
                             
                             if participant.isSoftDeleted {
                                 Text("(to be deleted)")
-                                    .font(.caption)
+                                    .font(.caption2)
                                     .foregroundColor(.red)
                             }
                             
-                            // --- НАЧАЛО ИЗМЕНЕНИЙ ---
-                            // Проверяем, совпадает ли email участника с email'ом
-                            // текущего залогиненного пользователя.
+                            // Текущий пользователь
                             if let participantEmail = participant.email,
                                let currentUserEmail = authService.currentUser?.email,
                                !participantEmail.isEmpty,
                                participantEmail.caseInsensitiveCompare(currentUserEmail) == .orderedSame {
-                                
-                                Text("(current user)")
-                                    .font(.caption)
+                                Text("(you)")
+                                    .font(.caption2)
                                     .foregroundColor(.green)
                             }
-                            // --- КОНЕЦ ИЗМЕНЕНИЙ ---
                         }
                         
                         if let email = participant.email, !email.isEmpty {
-                            HStack {
+                            HStack(spacing: 4) {
                                 Image(systemName: "envelope.fill")
+                                    .font(.caption2)
+                                    .foregroundColor(.gray)
                                 Text(email)
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
                             }
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
                         }
                         
                         if let phone = participant.phone, !phone.isEmpty {
-                            HStack {
+                            HStack(spacing: 4) {
                                 Image(systemName: "phone.fill")
+                                    .font(.caption2)
+                                    .foregroundColor(.gray)
                                 Text(phone)
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
                             }
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
                         }
                     }
+                    
                     Spacer()
+                    
+                    // --- СТАТУС СИНХРОНИЗАЦИИ (как в WhatsApp) ---
+                    syncStatusIcon(for: participant)
                 }
                 .padding(.vertical, 4)
                 .contentShape(Rectangle())
@@ -106,16 +113,16 @@ struct ParticipantsListView: View {
                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                     if !participant.isSoftDeleted {
                         Button {
-                            // This action is now neutral. It just sets the data.
                             participantToDelete = participant
                         } label: {
                             Label("Delete", systemImage: "trash")
                         }
-                        .tint(.red) // This makes the swipe action background red.
+                        .tint(.red)
                     }
                 }
             }
         }
+        .listStyle(.insetGrouped)
         .navigationTitle(localizationManager.localize(key: "Participants"))
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
@@ -146,8 +153,6 @@ struct ParticipantsListView: View {
             #endif
             }
         }
-        // This is the new, correct way to handle alerts for list items.
-        // It watches the `participantToDelete` state and presents the alert when it's not nil.
         .alert(item: $participantToDelete) { participant in
             Alert(
                 title: Text("Confirm Deletion"),
@@ -159,7 +164,77 @@ struct ParticipantsListView: View {
             )
         }
     }
-
+    
+    // --- АВАТАР УЧАСТНИКА ---
+    @ViewBuilder
+    private func avatarView(for participant: Participant) -> some View {
+        let initials = getInitials(from: participant.name ?? "?")
+        let isDeleted = participant.isSoftDeleted
+        let needsSync = participant.needsSync
+        
+        ZStack {
+            // Круглый фон
+            Circle()
+                .fill(isDeleted ? Color.gray.opacity(0.3) : Color.blue.opacity(0.2))
+                .frame(width: 44, height: 44)
+            
+            // Инициалы
+            Text(initials)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(isDeleted ? .gray : .blue)
+            
+            // Индикатор синхронизации в углу аватара
+            if needsSync && !isDeleted {
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: 18, height: 18)
+                    .overlay(
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundColor(.orange)
+                    )
+                    .offset(x: 16, y: 16)
+            }
+        }
+    }
+    
+    // --- СТАТУС СИНХРОНИЗАЦИИ (как в WhatsApp) ---
+    @ViewBuilder
+    private func syncStatusIcon(for participant: Participant) -> some View {
+        if participant.isSoftDeleted {
+            // Для удаленных показываем корзину
+            Image(systemName: "trash.circle.fill")
+                .foregroundColor(.red)
+                .font(.title3)
+        } else if participant.needsSync {
+            // Ожидание синхронизации - облако со стрелкой
+            HStack(spacing: 2) {
+                Image(systemName: "icloud.and.arrow.up")
+                    .foregroundColor(.orange)
+                    .font(.footnote)
+            }
+        } else {
+            // Синхронизировано - облако с галочкой
+            Image(systemName: "checkmark.icloud.fill")
+                .foregroundColor(.green)
+                .font(.title3)
+        }
+    }
+    
+    // --- ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ---
+    
+    private func getInitials(from name: String) -> String {
+        let words = name.split(separator: " ")
+        if words.count >= 2 {
+            let first = String(words[0].prefix(1))
+            let last = String(words[1].prefix(1))
+            return (first + last).uppercased()
+        } else if let first = name.first {
+            return String(first).uppercased()
+        }
+        return "?"
+    }
+    
     private func restoreParticipant(_ participant: Participant) {
         guard let userID = authService.currentUser?.id else { return }
         withAnimation {
