@@ -140,7 +140,9 @@ struct ParticipantsListView: View {
                 ParticipantEditView(participant: participant)
             #if os(iOS)
             case .contactImporter:
-                ContactPickerView()
+                ContactPickerView(onDismiss: {
+                    activeSheet = nil
+                })
             #endif
             }
         }

@@ -7,7 +7,7 @@ struct GroupsListView: View {
 
     @FetchRequest(
         entity: Group.entity(),
-        sortDescriptors: [NSSortDescriptor(keyPath: \Group.name, ascending: true)],
+        sortDescriptors: [NSSortDescriptor(keyPath: \Group.updatedAt, ascending: false)],
         predicate: NSPredicate(format: "isSoftDeleted == NO")
     ) var groups: FetchedResults<Group>
     

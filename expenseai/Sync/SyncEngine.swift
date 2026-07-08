@@ -157,37 +157,37 @@ final class SyncEngine: ObservableObject {
         
         print("🔄 Handling \(mergeDTOs.count) participant merges...")
         
-        try await context.perform {
+        let localContext = self.context
+        
+        try await localContext.perform {
             for dto in mergeDTOs {
                 guard let clientId = dto.clientId else { continue }
                 
-                // Find the local participant that has the old (client) ID.
                 let fetchRequest = Participant.fetchRequest()
                 fetchRequest.predicate = NSPredicate(format: "id == %@", clientId as CVarArg)
                 fetchRequest.fetchLimit = 1
                 
-                // If we find the participant, update its ID to the new canonical ID from the server.
-                if let participantToUpdate = try self.context.fetch(fetchRequest).first {
+                // ✅ Используем localContext вместо self.context
+                if let participantToUpdate = try localContext.fetch(fetchRequest).first {
                     print("Merging participant: \(participantToUpdate.name ?? "") | Old ID: \(clientId) -> New ID: \(dto.id)")
                     participantToUpdate.id = dto.id
-                    // We don't need to set needsSync, as this is just an ID correction.
                 }
             }
             
-            // Save the context to persist the ID changes.
-            if self.context.hasChanges {
-                try self.context.save()
+            if localContext.hasChanges {
+                try localContext.save()
             }
         }
     }
     
     /// Собирает все локальные объекты с флагом `needsSync = true`.
     private func fetchPendingObjects<T: Syncable>(entity: T.Type) async throws -> [T.DTO] {
-        try await context.perform {
+        let localContext = self.context  // ✅ Извлекаем в локальную переменную
+        return try await localContext.perform {
             let fetchRequest = NSFetchRequest<T>(entityName: T.entity().name!)
             fetchRequest.predicate = NSPredicate(format: "needsSync == YES")
             
-            let results = try self.context.fetch(fetchRequest)
+            let results = try localContext.fetch(fetchRequest)  // ✅ Используем localContext
             return results.compactMap { $0.toDTO() }
         }
     }
@@ -195,11 +195,12 @@ final class SyncEngine: ObservableObject {
     /// Сбрасывает флаг `needsSync` для успешно отправленных объектов.
     private func batchUpdateNeedsSyncFlag(for ids: [UUID], entityName: String) async throws {
         guard !ids.isEmpty else { return }
-        try await context.perform {
+        let localContext = self.context  // ✅ Извлекаем в локальную переменную
+        try await localContext.perform {
             let batchUpdateRequest = NSBatchUpdateRequest(entityName: entityName)
             batchUpdateRequest.predicate = NSPredicate(format: "id IN %@", ids)
             batchUpdateRequest.propertiesToUpdate = ["needsSync": false]
-            try self.context.execute(batchUpdateRequest)
+            try localContext.execute(batchUpdateRequest)  // ✅ Используем localContext
             print("Reset needsSync flag for \(ids.count) objects in \(entityName).")
         }
     }
@@ -207,20 +208,20 @@ final class SyncEngine: ObservableObject {
     // MARK: - Reconciliation (Applying Server Changes)
     
     private func applyChanges(for dtos: [any Codable], entityType: NSManagedObject.Type, in context: NSManagedObjectContext) async throws {
-        try await context.perform {
-            // Определяем тип DTO и вызываем соответствующий метод для применения изменений
+        let localContext = context
+        try await localContext.perform {
             if let participantDTOs = dtos as? [Participant.DTO] {
-                try self.applyParticipantChanges(participantDTOs)
+                try Self.applyParticipantChanges(participantDTOs, in: localContext)
             } else if let groupDTOs = dtos as? [Group.DTO] {
-                try self.applyGroupChanges(groupDTOs)
+                try Self.applyGroupChanges(groupDTOs, in: localContext)
             } else if let expenseDTOs = dtos as? [Expense.DTO] {
-                try self.applyExpenseChanges(expenseDTOs)
+                try Self.applyExpenseChanges(expenseDTOs, in: localContext)
             } else if let currencyDTOs = dtos as? [Currency.DTO] {
-                try self.applyCurrencyChanges(currencyDTOs)
+                try Self.applyCurrencyChanges(currencyDTOs, in: localContext)
             }
             
-            if context.hasChanges {
-                try context.save()
+            if localContext.hasChanges {
+                try localContext.save()
             }
         }
     }
@@ -228,7 +229,7 @@ final class SyncEngine: ObservableObject {
     // MARK: - Entity-Specific Reconciliation Logic
     // (Ваши существующие методы apply... почти не изменились)
 
-    private func applyParticipantChanges(_ dtos: [Participant.DTO]) throws {
+    private static func applyParticipantChanges(_ dtos: [Participant.DTO], in context: NSManagedObjectContext) throws {
         let dtoIDs = dtos.map { $0.id }
         let fetchRequest = Participant.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "id IN %@", dtoIDs)
@@ -237,28 +238,20 @@ final class SyncEngine: ObservableObject {
 
         for dto in dtos {
             let participant = existingParticipantsDict[dto.id] ?? Participant(context: context)
-            
-            // Всегда вызываем update. Теперь он сам правильно установит isSoftDeleted.
             participant.update(from: dto, in: context)
         }
     }
 
-    private func applyGroupChanges(_ dtos: [Group.DTO]) throws {
+    private static func applyGroupChanges(_ dtos: [Group.DTO], in context: NSManagedObjectContext) throws {
         let dtoIDs = dtos.map { $0.id }
         let fetchRequest = Group.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "id IN %@", dtoIDs)
         let existingGroups = try context.fetch(fetchRequest)
         let existingGroupsDict = Dictionary(uniqueKeysWithValues: existingGroups.map { ($0.id!, $0) })
 
-        // --- OPTIMIZATION: Pre-fetch all related objects needed for the updates ---
-        //let currencyCodes = Set(dtos.map { $0.defaultCurrencyCode })
         let allMemberIDs = Set(dtos.flatMap { $0.memberIDs })
-        
-        //let currenciesByCode = try fetchCurrencies(with: currencyCodes, in: context)
         let currenciesByCode = try fetchAllCurrencies(in: context)
-        
         let membersByID = try fetchParticipants(with: Array(allMemberIDs), in: context)
-        // --- END OF OPTIMIZATION ---
 
         for dto in dtos {
             let group = existingGroupsDict[dto.id] ?? Group(context: context)
@@ -266,12 +259,11 @@ final class SyncEngine: ObservableObject {
                 context.delete(group)
                 continue
             }
-            // Pass the pre-fetched dictionaries to the update method
             try group.update(from: dto, currencies: currenciesByCode, members: membersByID)
         }
     }
 
-    private func applyExpenseChanges(_ dtos: [Expense.DTO]) throws {
+    private static func applyExpenseChanges(_ dtos: [Expense.DTO], in context: NSManagedObjectContext) throws {
         let dtoIDs = dtos.map { $0.id }
         let fetchRequest = Expense.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "id IN %@", dtoIDs)
@@ -288,11 +280,7 @@ final class SyncEngine: ObservableObject {
         }
     }
 
-    private func applyCurrencyChanges(_ dtos: [Currency.DTO]) throws {
-        // More efficient version:
-        // 1. Fetch all existing currencies in one go.
-        // 2. Create a dictionary for quick lookups.
-        // 3. Iterate through DTOs and update or create managed objects.
+    private static func applyCurrencyChanges(_ dtos: [Currency.DTO], in context: NSManagedObjectContext) throws {
         let existingCurrencies = try context.fetch(Currency.fetchRequest())
         let existingCurrenciesDict = Dictionary(uniqueKeysWithValues: existingCurrencies.compactMap { currency -> (String, Currency)? in
             guard let code = currency.c_code else { return nil }
@@ -300,7 +288,6 @@ final class SyncEngine: ObservableObject {
         })
 
         for dto in dtos {
-            // Find an existing currency or create a new one.
             let currency = existingCurrenciesDict[dto.c_code] ?? Currency(context: context)
             currency.update(from: dto)
         }

@@ -34,7 +34,9 @@ struct ExpenseEditView: View {
     
     @State private var expenseToEdit: Expense?
     @State private var groupForNewExpense: Group?
-    
+    @FocusState private var isAmountFocused: Bool
+    @State private var isFirstAppear = true
+
     @FetchRequest(
         entity: Currency.entity(),
         sortDescriptors: [NSSortDescriptor(keyPath: \Currency.currency_name, ascending: true)],
@@ -118,6 +120,8 @@ struct ExpenseEditView: View {
                     value: $amount,
                     format: .number.precision(.fractionLength(Int(selectedCurrency?.decimal_digits ?? 2)))
                 )
+                .focused($isAmountFocused)  // <-- Привязываем фокус к полю
+
 
                     #if os(iOS)
                     .keyboardType(.decimalPad)
@@ -315,6 +319,12 @@ struct ExpenseEditView: View {
             participants = Set(group.membersArray)
             recalculateShares()
         }
+        if isFirstAppear {
+             isFirstAppear = false
+             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                 isAmountFocused = true
+             }
+         }
     }
 
     private var isSaveDisabled: Bool {

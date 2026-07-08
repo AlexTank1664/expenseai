@@ -7,19 +7,14 @@ struct GroupEditView: View {
     @EnvironmentObject var authService: AuthService
     @EnvironmentObject private var localizationManager: LocalizationManager
 
-    // The group to edit, if it exists. Nil if we are creating a new one.
     let group: Group?
     
-    // --- Local state for the form ---
     @State private var name: String = ""
     @State private var selectedCurrency: Currency?
     @State private var selectedParticipants: Set<Participant> = []
     
-    // --- НАЧАЛО ИЗМЕНЕНИЙ 1: Добавляем состояние для алерта ---
     @State private var showingValidationAlert = false
-    // --- КОНЕЦ ИЗМЕНЕНИЙ 1 ---
-    
-    // Computed properties
+
     private var pickerCurrencies: [Currency] {
         // Начинаем с массива активных валют
         var availableCurrencies = Array(currencies)
@@ -76,8 +71,8 @@ struct GroupEditView: View {
                         }
                     }
                 }
-
-                Section(header: Text(localizationManager.localize(key: "Participants"))) {
+                
+                Section {
                     if participants.isEmpty {
                         Text(localizationManager.localize(key: "Choose participants"))
                             .foregroundColor(.gray)
@@ -92,13 +87,11 @@ struct GroupEditView: View {
                             }) {
                                 HStack {
                                     Text(participant.name ?? "Unknown")
-                                    
                                     if participant.isSoftDeleted {
                                         Text("(deleted)")
                                             .font(.caption2)
                                             .foregroundColor(.gray)
                                     }
-                                    
                                     Spacer()
                                     if selectedParticipants.contains(participant) {
                                         Image(systemName: "checkmark")
@@ -108,7 +101,22 @@ struct GroupEditView: View {
                             .foregroundColor(.primary)
                         }
                     }
+                } header: {
+                    HStack {
+                        Text(localizationManager.localize(key: "Participants"))
+                        Spacer()
+                        NavigationLink(destination: ParticipantsListView()) {
+                            HStack(spacing: 4) {
+
+//                                Text(localizationManager.localize(key: "Manage"))
+//                                    .font(.subheadline)
+                                Image(systemName: "person.2.badge.plus")
+                            }
+                            .foregroundColor(.accentColor)
+                        }
+                    }
                 }
+                // -------------------------------------
             }
             .navigationTitle(navigationTitle)
             .toolbar {
@@ -118,27 +126,21 @@ struct GroupEditView: View {
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    // --- НАЧАЛО ИЗМЕНЕНИЙ 2: Убираем .disabled и меняем действие ---
                     Button(localizationManager.localize(key: "Save")) {
-                        validateAndSave() // Вызываем новую функцию-валидатор
+                        validateAndSave()
                     }
-                    // .disabled(...) <-- Эта строка удалена
-                    // --- КОНЕЦ ИЗМЕНЕНИЙ 2 ---
                 }
             }
             .onAppear {
-                // Set default currency only if creating a new group
                 if isNew && selectedCurrency == nil {
                     selectedCurrency = currencies.first
                 }
             }
-            // --- НАЧАЛО ИЗМЕНЕНИЙ 3: Добавляем модификатор .alert ---
             .alert(localizationManager.localize(key: "Incomplete data"), isPresented: $showingValidationAlert) {
                 Button("OK", role: .cancel) { }
             } message: {
                 Text(localizationManager.localize(key: "Please fill in the name, select a currency and participants for the group."))
             }
-            // --- КОНЕЦ ИЗМЕНЕНИЙ 3 ---
         }
     }
     

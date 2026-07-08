@@ -7,34 +7,33 @@ import UIKit
 
 struct ContactPickerView: UIViewControllerRepresentable {
     @Environment(\.managedObjectContext) private var viewContext
-    @Environment(\.dismiss) private var dismiss
     var currentGroup: Group?
-
+    var onDismiss: () -> Void
+    
     func makeUIViewController(context: Context) -> CNContactPickerViewController {
         let picker = CNContactPickerViewController()
         picker.delegate = context.coordinator
         return picker
     }
-
+    
     func updateUIViewController(_ uiViewController: CNContactPickerViewController, context: Context) {}
-
+    
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
     }
-
+    
     class Coordinator: NSObject, CNContactPickerDelegate {
         var parent: ContactPickerView
-
+        
         init(_ parent: ContactPickerView) {
             self.parent = parent
         }
-
+        
         func contactPicker(_ picker: CNContactPickerViewController, didSelect contacts: [CNContact]) {
             var participantsToSave: [Participant] = []
             
             for contact in contacts {
                 let fullName = "\(contact.givenName) \(contact.familyName)".trimmingCharacters(in: .whitespaces)
-                
                 guard !fullName.isEmpty else {
                     print("⚠️ Skipping contact with empty name")
                     continue
@@ -43,49 +42,38 @@ struct ContactPickerView: UIViewControllerRepresentable {
                 let email = contact.emailAddresses.first?.value as String?
                 let phone = contact.phoneNumbers.first?.value.stringValue
                 
-                // Проверяем, существует ли уже участник с таким email
-                let existingParticipant = fetchParticipant(byEmail: email)
-                
+                let existingParticipant = fetchParticipant(byEmail: email, byName: fullName)
                 let participant: Participant
-                let isNew: Bool
+//                let isNew: Bool
                 
                 if let existing = existingParticipant {
                     participant = existing
-                    isNew = false
+//                    isNew = false
                     print("📝 Updating existing participant: \(fullName)")
                 } else {
                     participant = Participant(context: parent.viewContext)
                     participant.id = UUID()
                     participant.createdAt = Date()
-                    isNew = true
+//                    isNew = true
                     print("✅ Creating new participant: \(fullName)")
                 }
                 
-                // Обновляем поля
                 participant.name = fullName
                 participant.email = email
                 participant.phone = phone
-                
-                // ✅ ВАЖНО: всегда устанавливаем updatedAt
                 participant.updatedAt = Date()
-                
-                // Добавляем в группу, если передана
+                  
                 if let group = parent.currentGroup {
                     addParticipantToGroup(participant, group: group)
                 }
                 
-                // Устанавливаем флаг синхронизации
                 participant.needsSync = true
-                
                 participantsToSave.append(participant)
             }
             
-            // Сохраняем всех участников
             do {
                 try parent.viewContext.save()
                 print("✅ Successfully imported \(participantsToSave.count) contacts")
-                
-                // Логируем каждого сохраненного участника
                 for participant in participantsToSave {
                     print("   - \(participant.name ?? "Unknown") (updatedAt: \(participant.updatedAt?.description ?? "nil"))")
                 }
@@ -94,44 +82,58 @@ struct ContactPickerView: UIViewControllerRepresentable {
                 parent.viewContext.rollback()
             }
             
-            parent.dismiss()
+            //parent.onDismiss()
         }
         
         func contactPickerDidCancel(_ picker: CNContactPickerViewController) {
-            parent.dismiss()
+            
+            //parent.onDismiss()
         }
         
-        // Вспомогательная функция для поиска существующего участника
-        private func fetchParticipant(byEmail email: String?) -> Participant? {
-            guard let email = email, !email.isEmpty else { return nil }
+        private func fetchParticipant(byEmail email: String?, byName name: String) -> Participant? {
+            // 1. Сначала ищем по email (если он есть) среди НЕ удаленных участников
+            if let email = email, !email.isEmpty {
+                let request = NSFetchRequest<NSFetchRequestResult>(entityName: "Participant")
+                request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
+                    NSPredicate(format: "email == %@", email),
+                    NSPredicate(format: "isSoftDeleted == NO")
+                ])
+                request.fetchLimit = 1
+                
+                do {
+                    let results = try parent.viewContext.fetch(request)
+                    if let found = results.first as? Participant {
+                        return found  // ✅ Нашли активного участника по email
+                    }
+                } catch {
+                    print("Error fetching participant by email: \(error)")
+                }
+            }
             
-            let request: NSFetchRequest<Participant> = Participant.fetchRequest()
-            request.predicate = NSPredicate(format: "email == %@", email)
+            // 2. Если по email не нашли (или email пустой) — ищем по имени среди НЕ удаленных
+            let request = NSFetchRequest<NSFetchRequestResult>(entityName: "Participant")
+            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
+                NSPredicate(format: "name == %@", name),
+                NSPredicate(format: "isSoftDeleted == NO")
+            ])
             request.fetchLimit = 1
             
             do {
-                return try parent.viewContext.fetch(request).first
+                let results = try parent.viewContext.fetch(request)
+                return results.first as? Participant  // ✅ Может быть nil, если не нашли
             } catch {
-                print("Error fetching participant by email: \(error)")
+                print("Error fetching participant by name: \(error)")
                 return nil
             }
         }
         
-        // Функция для добавления участника в группу
         private func addParticipantToGroup(_ participant: Participant, group: Group) {
-            // Получаем текущие группы участника как Set
             let currentGroups = participant.member as? Set<Group> ?? []
-            
-            // Проверяем, есть ли уже эта группа
             if !currentGroups.contains(where: { $0.id == group.id }) {
-                // Создаем новый Set с добавленной группой
                 var updatedGroups = currentGroups
                 updatedGroups.insert(group)
-                
-                // Присваиваем новый Set
                 participant.member = updatedGroups as NSSet
                 
-                // Также добавляем участника в группу (для поддержания двусторонней связи)
                 let currentParticipants = group.members as? Set<Participant> ?? []
                 if !currentParticipants.contains(where: { $0.id == participant.id }) {
                     var updatedParticipants = currentParticipants
@@ -143,12 +145,10 @@ struct ContactPickerView: UIViewControllerRepresentable {
     }
 }
 
-// Расширение для удобной работы с member
 extension Participant {
     var memberArray: [Group] {
         let set = member as? Set<Group> ?? []
         return Array(set)
     }
 }
-
 #endif
